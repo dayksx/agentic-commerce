@@ -1,4 +1,5 @@
 import express, { Express, Request, Response } from "express";
+import { Server as HttpServer } from "http";
 import {
     Task,
     TaskState,
@@ -23,6 +24,7 @@ import { Server } from "../interfaces";
  */
 export class A2AServer implements Server {
     private expressApp: Express | null = null;
+    private httpServer: HttpServer | null = null;
     private executeWorkflow: (prompt: string) => Promise<string>;
     private port: number;
     private enablePayment: boolean;
@@ -54,8 +56,13 @@ export class A2AServer implements Server {
 
         this.registerRoutes();
 
-        this.expressApp.listen(this.port, () => {
-            console.log(`🚀 A2A server running on http://localhost:${this.port}/a2a/v1`);
+        this.httpServer = this.expressApp.listen(this.port, () => {
+            const address = this.httpServer?.address();
+            const hostname = address && typeof address === 'object' 
+                ? (address.address === '0.0.0.0' || address.address === '::' ? '0.0.0.0' : address.address)
+                : 'localhost';
+            const port = address && typeof address === 'object' ? address.port : this.port;
+            console.log(`🚀 A2A server running on http://${hostname}:${port}/a2a/v1`);
         }).on('error', (error) => {
             console.error('A2A Server error:', error);
             process.exit(1);
@@ -569,6 +576,10 @@ export class A2AServer implements Server {
      * Stops the A2A server
      */
     public async stop(): Promise<void> {
+        if (this.httpServer) {
+            this.httpServer.close();
+            this.httpServer = null;
+        }
         if (this.expressApp) {
             this.expressApp = null;
         }

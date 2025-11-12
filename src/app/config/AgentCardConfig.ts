@@ -35,8 +35,8 @@ export class AgentCardConfig {
      */
     static fromEnvironment(options: Partial<AgentCardConfigOptions> = {}): AgentCardConfigOptions {
         const port = options.port ?? parseInt(process.env.PORT || '3000', 10);
-        const hostname = options.hostname || process.env.AGENT_HOSTNAME || 'localhost';
-        const protocol = hostname === 'localhost' ? 'http' : 'https';
+        const hostname = options.hostname || process.env.AGENT_HOSTNAME || '0.0.0.0';
+        const protocol = hostname === '0.0.0.0' ? 'http' : 'https';
         const baseUrl = options.baseUrl || process.env.AGENT_URL || `${protocol}://${hostname}:${port}`;
 
         const config: AgentCardConfigOptions = {

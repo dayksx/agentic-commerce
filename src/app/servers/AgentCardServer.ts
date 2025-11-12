@@ -298,12 +298,17 @@ export class AgentCardServer {
 
         this.registerRoutes();
 
-        this.server = this.expressApp.listen(this.config.port, this.config.hostname, () => {
-            const message = `📋 Agent Card available on http://${this.config.hostname}:${this.config.port}${this.config.path}`;
+        this.server = this.expressApp.listen(this.config.port, () => {
+            const address = this.server?.address();
+            const hostname = address && typeof address === 'object' 
+                ? (address.address === '0.0.0.0' || address.address === '::' ? '0.0.0.0' : address.address)
+                : this.config.hostname;
+            const port = address && typeof address === 'object' ? address.port : this.config.port;
+            const message = `📋 Agent Card available on http://${hostname}:${port}${this.config.path}`;
             console.log(message);
             
             if (this.config.onServerStart) {
-                this.config.onServerStart(this.config.port, this.config.hostname);
+                this.config.onServerStart(port, hostname);
             }
         });
 

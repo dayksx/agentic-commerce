@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import express, { Express } from "express";
+import { Server as HttpServer } from "http";
 import { Server } from "../interfaces";
 
 /**
@@ -10,6 +11,7 @@ import { Server } from "../interfaces";
  */
 export class MCPServer implements Server {
     private server: McpServer | null = null;
+    private httpServer: HttpServer | null = null;
     private expressApp: Express | null = null;
     private executeWorkflow: (prompt: string) => Promise<string>;
     private port: number;
@@ -45,8 +47,13 @@ export class MCPServer implements Server {
 
         this.registerRoutes();
 
-        this.expressApp.listen(this.port, () => {
-            console.log(`🚀 MCP server running on http://localhost:${this.port}/mcp`);
+        this.httpServer = this.expressApp.listen(this.port, () => {
+            const address = this.httpServer?.address();
+            const hostname = address && typeof address === 'object' 
+                ? (address.address === '0.0.0.0' || address.address === '::' ? '0.0.0.0' : address.address)
+                : 'localhost';
+            const port = address && typeof address === 'object' ? address.port : this.port;
+            console.log(`🚀 MCP server running on http://${hostname}:${port}/mcp`);
         }).on('error', (error) => {
             console.error('MCP Server error:', error);
             process.exit(1);
@@ -124,6 +131,10 @@ export class MCPServer implements Server {
      * Stops the MCP server
      */
     public async stop(): Promise<void> {
+        if (this.httpServer) {
+            this.httpServer.close();
+            this.httpServer = null;
+        }
         if (this.expressApp) {
             this.expressApp = null;
         }
