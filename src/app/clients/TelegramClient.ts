@@ -3,8 +3,9 @@
  */
 import { Telegraf, Context } from "telegraf";
 import { message } from "telegraf/filters";
+import { Client } from "../interfaces";
 
-export class TelegramClient {
+export class TelegramClient implements Client {
     private executeWorkflow: (prompt: string) => Promise<string>;
     private bot: Telegraf<Context> | null = null;
 

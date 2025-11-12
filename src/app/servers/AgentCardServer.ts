@@ -293,7 +293,35 @@ export class AgentCardServer {
             return;
         }
 
+        // Set up Express server
         this.expressApp = express();
+
+        this.registerRoutes();
+
+        this.server = this.expressApp.listen(this.config.port, this.config.hostname, () => {
+            const message = `📋 Agent Card available on http://${this.config.hostname}:${this.config.port}${this.config.path}`;
+            console.log(message);
+            
+            if (this.config.onServerStart) {
+                this.config.onServerStart(this.config.port, this.config.hostname);
+            }
+        });
+
+        this.server.on('error', (error: Error) => {
+            if (this.config.onServerError) {
+                this.config.onServerError(error);
+            } else {
+                console.error('Agent Card Server error:', error);
+            }
+            process.exit(1);
+        });
+    }
+
+    /**
+     * Registers routes for the Agent Card server
+     */
+    private registerRoutes(): void {
+        if (!this.expressApp) return;
 
         // Serve the agent card at the configured path
         this.expressApp.get(this.config.path, (req, res) => {
@@ -305,27 +333,6 @@ export class AgentCardServer {
         // Handle 404 for other paths
         this.expressApp.use((req, res) => {
             res.status(404).send('Not Found');
-        });
-
-        return new Promise<void>((resolve, reject) => {
-            this.server = this.expressApp!.listen(this.config.port, this.config.hostname, () => {
-                const message = `📋 Agent Card available on http://${this.config.hostname}:${this.config.port}${this.config.path}`;
-                console.log(message);
-                
-                if (this.config.onServerStart) {
-                    this.config.onServerStart(this.config.port, this.config.hostname);
-                }
-                resolve();
-            });
-
-            this.server.on('error', (error: Error) => {
-                if (this.config.onServerError) {
-                    this.config.onServerError(error);
-                } else {
-                    console.error('Agent Card Server error:', error);
-                }
-                reject(error);
-            });
         });
     }
 

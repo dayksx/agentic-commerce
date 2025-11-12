@@ -1,0 +1,47 @@
+# Fichiers et dossiers à exclure de l'image Docker
+# Cela réduit la taille de l'image et accélère les builds
+
+# Dépendances (seront réinstallées dans le conteneur)
+node_modules/
+
+# Fichiers de build locaux (seront recompilés dans le conteneur)
+dist/
+
+# Fichiers de configuration locaux
+.env
+.env.local
+.env.*.local
+
+# Fichiers Git
+.git/
+.gitignore
+
+# Fichiers de l'éditeur
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de logs
+*.log
+logs/
+
+# Fichiers temporaires
+tmp/
+temp/
+*.tmp
+
+# Documentation (optionnel, peut être inclus si nécessaire)
+# README.md
+# LICENSE
+
+# Fichiers Docker (pour éviter la récursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+

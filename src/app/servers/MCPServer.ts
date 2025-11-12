@@ -1,27 +1,32 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import express, { Express } from "express";
+import { Server } from "../interfaces";
 
 /**
  * MCP Server that exposes a LangGraph workflow as an MCP tool.
  * The server can be accessed via MultiServerMCPClient from other agents.
  */
-export class MCPServer {
+export class MCPServer implements Server {
     private server: McpServer | null = null;
     private expressApp: Express | null = null;
     private executeWorkflow: (prompt: string) => Promise<string>;
+    private port: number;
 
-    constructor(executeWorkflow: (prompt: string) => Promise<string>) {
+    constructor(
+        executeWorkflow: (prompt: string) => Promise<string>,
+        port: number
+    ) {
         this.executeWorkflow = executeWorkflow;
+        this.port = port;
     }
 
     /**
      * Starts the MCP server
      */
-    public async start(transport: "stdio" | "sse" = "stdio"): Promise<void> {
-        if (this.server) {
+    public async start(): Promise<void> {
+        if (this.expressApp) {
             console.warn('MCP Server is already running');
             return;
         }
@@ -34,15 +39,53 @@ export class MCPServer {
 
         this.registerTool();
         
-        if (transport === "sse") {
-            this.launchSSEServer(8001);
-        } else {
-            this.launchStdioServer();
-        }
+        // Set up Express server
+        this.expressApp = express();
+        this.expressApp.use(express.json());
+
+        this.registerRoutes();
+
+        this.expressApp.listen(this.port, () => {
+            console.log(`🚀 MCP server running on http://localhost:${this.port}/mcp`);
+        }).on('error', (error) => {
+            console.error('MCP Server error:', error);
+            process.exit(1);
+        });
     }
 
-    public registerTool() {
+    /**
+     * Registers routes for the MCP server
+     */
+    private registerRoutes(): void {
+        if (!this.expressApp) return;
 
+        this.expressApp.post('/mcp', async (req, res) => {
+            // Ensure Accept header is set for StreamableHTTPServerTransport
+            if (!req.headers.accept) {
+                req.headers.accept = 'application/json, text/event-stream';
+            } else if (!req.headers.accept.includes('application/json') || !req.headers.accept.includes('text/event-stream')) {
+                req.headers.accept = 'application/json, text/event-stream';
+            }
+
+            // Create a new transport for each request to prevent request ID collisions
+            const transport = new StreamableHTTPServerTransport({
+                sessionIdGenerator: undefined,
+                enableJsonResponse: true
+            });
+
+            res.on('close', () => {
+                transport.close();
+            });
+
+            await this.server!.connect(transport);
+            await transport.handleRequest(req, res, req.body);
+        });
+    }
+
+    /**
+     * Registers MCP tools
+     */
+    private registerTool(): void {
         // Tool pour interroger le registry EIP-8004
         this.server?.tool(
             'query_agent_registry',
@@ -77,50 +120,10 @@ export class MCPServer {
         );
     }
 
-    public launchStdioServer() {
-        this.server?.connect(new StdioServerTransport());
-    }
-
-    public launchSSEServer(port: number = 8001): void {
-
-        // Set up Express and HTTP transport
-        this.expressApp = express();
-        this.expressApp.use(express.json());
-
-        this.expressApp.post('/mcp', async (req, res) => {
-            // Ensure Accept header is set for StreamableHTTPServerTransport
-            if (!req.headers.accept) {
-                req.headers.accept = 'application/json, text/event-stream';
-            } else if (!req.headers.accept.includes('application/json') || !req.headers.accept.includes('text/event-stream')) {
-                req.headers.accept = 'application/json, text/event-stream';
-            }
-
-            // Create a new transport for each request to prevent request ID collisions
-            const transport = new StreamableHTTPServerTransport({
-                sessionIdGenerator: undefined,
-                enableJsonResponse: true
-            });
-
-            res.on('close', () => {
-                transport.close();
-            });
-
-            await this.server!.connect(transport);
-            await transport.handleRequest(req, res, req.body);
-        });
-
-        this.expressApp.listen(port, () => {
-            console.log(`🚀 MCP server running on http://localhost:${port}/mcp`);
-        }).on('error', (error) => {
-            console.error('Server error:', error);
-            process.exit(1);
-        });
-    }
-
     /**
      * Stops the MCP server
      */
-    public stop(): void {
+    public async stop(): Promise<void> {
         if (this.expressApp) {
             this.expressApp = null;
         }

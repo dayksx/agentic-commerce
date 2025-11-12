@@ -13,7 +13,7 @@ agentRuntime.createAgentCardServer(3000).catch((error) => {
 });
 
 // Create MCP server with SSE transport for HTTP/curl access
-agentRuntime.createMCPServer("sse", 8001).catch((error) => {
+agentRuntime.createMCPServer(8001).catch((error) => {
     console.error("Failed to start MCP server:", error);
     process.exit(1);
 });

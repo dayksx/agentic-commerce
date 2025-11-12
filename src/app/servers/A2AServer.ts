@@ -3,9 +3,6 @@ import {
     Task,
     TaskState,
     TaskStatus,
-    Message,
-    Part,
-    Artifact,
     JSONRPCRequest,
     JSONRPCResponse,
     JSONRPCError,
@@ -15,15 +12,16 @@ import {
     ListTasksResult,
     TaskIdParams,
     A2AErrorCode,
-    TextPart,
 } from "./A2ATypes";
+import { Message, Part, Artifact, TextPart } from "../interfaces";
 import { paymentMiddleware } from "x402-express";
+import { Server } from "../interfaces";
 
 /**
  * A2A Server that exposes a LangGraph workflow as an A2A service.
  * The server can be accessed via A2A clients from other agents.
  */
-export class A2AServer {
+export class A2AServer implements Server {
     private expressApp: Express | null = null;
     private executeWorkflow: (prompt: string) => Promise<string>;
     private port: number;
@@ -570,7 +568,7 @@ export class A2AServer {
     /**
      * Stops the A2A server
      */
-    public stop(): void {
+    public async stop(): Promise<void> {
         if (this.expressApp) {
             this.expressApp = null;
         }

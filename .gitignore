@@ -61,3 +61,6 @@ coverage/
 # package-lock.json
 # yarn.lock
 
+# Documentation and guides
+docs/
+

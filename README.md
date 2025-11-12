@@ -120,6 +120,78 @@ pnpm build
 pnpm start
 ```
 
+### Docker
+
+You can also run the agent using Docker, which packages the application with all its dependencies.
+
+#### Prerequisites
+
+- Docker and Docker Compose installed on your system
+- A `.env` file configured (see [Installation](#installation) section)
+
+#### Using Docker Compose (Recommended)
+
+1. Build and start the container:
+```bash
+docker-compose up -d
+```
+
+This will:
+- Build the Docker image
+- Start the container with all required ports exposed
+- Load environment variables from `.env`
+
+2. View logs:
+```bash
+docker-compose logs -f
+```
+
+3. Stop the container:
+```bash
+docker-compose down
+```
+
+4. Rebuild after code changes:
+```bash
+docker-compose up -d --build
+```
+
+#### Using Docker directly
+
+1. Build the image:
+```bash
+docker build -t basic-agent .
+```
+
+2. Run the container:
+```bash
+docker run -d \
+  --name basic-agent \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  -p 8001:8001 \
+  --env-file .env \
+  basic-agent
+```
+
+3. View logs:
+```bash
+docker logs -f basic-agent
+```
+
+4. Stop the container:
+```bash
+docker stop basic-agent
+docker rm basic-agent
+```
+
+The container exposes the same ports as the local installation:
+- **Agent Card Server**: `http://localhost:3000/.well-known/agent-card.json`
+- **A2A Server**: `http://localhost:3001/a2a/v1`
+- **MCP Server (SSE)**: `http://localhost:8001/mcp`
+
+For more detailed Docker documentation, see [docs/DOCKER_GUIDE.md](docs/DOCKER_GUIDE.md).
+
 ### Customizing the Entry Point
 
 You can customize which servers to start by modifying `src/index.ts`:

@@ -134,25 +134,28 @@ export class AgentRuntime {
      * Creates an MCP server
      * 
      */
-    public async createMCPServer(transport: "stdio" | "sse" = "stdio", port?: number): Promise<void> {
-        this.mcpServer = new MCPServer(async (prompt: string) => {
-            console.log("✉️  MCP Server: Executing workflow with prompt: '", prompt, "'");
+    public async createMCPServer(port: number): Promise<void> {
+        this.mcpServer = new MCPServer(
+            async (prompt: string) => {
+                console.log("✉️  MCP Server: Executing workflow with prompt: '", prompt, "'");
 
-            const result = await this.workflows.get('mcp')?.invoke({
-                messages: [new HumanMessage(prompt)]
-            });
-            
-            // Extraire le dernier message de la réponse
-            const messages = (result as { messages: any[] }).messages;
-            const lastMessage = messages[messages.length - 1];
-            
-            // Retourner le contenu du message sous forme de string
-            return typeof lastMessage.content === 'string' 
-                ? lastMessage.content 
-                : JSON.stringify(lastMessage.content);
-        });
+                const result = await this.workflows.get('mcp')?.invoke({
+                    messages: [new HumanMessage(prompt)]
+                });
+                
+                // Extraire le dernier message de la réponse
+                const messages = (result as { messages: any[] }).messages;
+                const lastMessage = messages[messages.length - 1];
+                
+                // Retourner le contenu du message sous forme de string
+                return typeof lastMessage.content === 'string' 
+                    ? lastMessage.content 
+                    : JSON.stringify(lastMessage.content);
+            },
+            port
+        );
 
-        await this.mcpServer.start(transport);
+        await this.mcpServer.start();
     }
 
 
