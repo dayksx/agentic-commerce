@@ -3,6 +3,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 import express, { Express } from "express";
 import { Server as HttpServer } from "http";
+import { paymentMiddleware } from "x402-express";
 import { Server } from "../interfaces";
 
 /**
@@ -15,13 +16,16 @@ export class MCPServer implements Server {
     private expressApp: Express | null = null;
     private executeWorkflow: (prompt: string) => Promise<string>;
     private port: number;
+    private enablePayment: boolean;
 
     constructor(
         executeWorkflow: (prompt: string) => Promise<string>,
-        port: number
+        port: number,
+        enablePayment?: boolean
     ) {
         this.executeWorkflow = executeWorkflow;
         this.port = port;
+        this.enablePayment = enablePayment ?? (process.env.MCP_REQUIRE_PAYMENT === 'true');
     }
 
     /**
@@ -65,6 +69,22 @@ export class MCPServer implements Server {
      */
     private registerRoutes(): void {
         if (!this.expressApp) return;
+
+        // Appliquer le middleware de paiement uniquement si activé
+        if (this.enablePayment) {
+            this.expressApp.use(paymentMiddleware(
+                "0x224b11F0747c7688a10aCC15F785354aA6493ED6",
+                {
+                  "/mcp": {
+                    price: "$0.10",
+                    network: "base-sepolia",
+                    config: {
+                      description: "Access to premium content",
+                    }
+                  }
+                }
+            ));
+        }
 
         this.expressApp.post('/mcp', async (req, res) => {
             // Ensure Accept header is set for StreamableHTTPServerTransport

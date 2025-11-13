@@ -134,7 +134,7 @@ export class AgentRuntime {
      * Creates an MCP server
      * 
      */
-    public async createMCPServer(port: number): Promise<void> {
+    public async createMCPServer(port: number, enablePayment?: boolean): Promise<void> {
         this.mcpServer = new MCPServer(
             async (prompt: string) => {
                 console.log("✉️  MCP Server: Executing workflow with prompt: '", prompt, "'");
@@ -152,7 +152,8 @@ export class AgentRuntime {
                     ? lastMessage.content 
                     : JSON.stringify(lastMessage.content);
             },
-            port
+            port,
+            enablePayment
         );
 
         await this.mcpServer.start();

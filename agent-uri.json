@@ -3,6 +3,7 @@
   "name": "basic-agent",
   "description": "A flexible, multi-protocol AI agent runtime built with LangGraph, supporting Telegram, MCP (Model Context Protocol), A2A (Agent-to-Agent) protocols. This agent can be easily extended and customized for various use cases. It provides conversational AI capabilities, Agentic Ecosystem Research, and multichain workflows using OpenAI GPT models, EIP-8004 identity registry queries, and multichain agent-to-agent communication.",
   "image": "ipfs://bafybeicsxo26bnhc6glwchbblqwwyqyzsxpy3gia3fljcs5cl3tjur6grm",
+  "source": "https://github.com/dayksx/basic-agent/tree/main",
   "endpoints": [
     {
       "name": "A2A",
