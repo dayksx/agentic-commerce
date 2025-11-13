@@ -16,6 +16,12 @@
       "version": "2025-06-18"
     },
     {
+      "name": "Telegram",
+      "endpoint": "https://t.me/CryptoBroBot",
+      "capabilities": {},
+      "version": "2025-06-18"
+    },
+    {
       "name": "ENS",
       "endpoint": "dayksx.eth",
       "version": "v1"

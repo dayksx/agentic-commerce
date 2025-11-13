@@ -192,6 +192,247 @@ The container exposes the same ports as the local installation:
 
 For more detailed Docker documentation, see [docs/DOCKER_GUIDE.md](docs/DOCKER_GUIDE.md).
 
+### Deploying to EigenCloud (TEE)
+
+EigenCloud provides a secure deployment platform using Trusted Execution Environments (TEEs) powered by Intel TDX. This enables verifiable applications with hardware-level isolation, cryptographic attestation, and deterministic identities.
+
+#### What is EigenCloud?
+
+EigenCloud is a platform that allows you to deploy applications in Trusted Execution Environments (TEEs) with:
+
+- **Hardware Isolation**: Intel TDX secure enclaves with memory encryption
+- **Attestation**: Cryptographic proof of exact Docker image integrity
+- **Deterministic Keys**: Apps receive consistent identities via KMS
+- **Smart Contracts**: Onchain configuration and lifecycle management
+
+#### Prerequisites
+
+- Docker installed (for building images)
+- An Ethereum wallet with funds for deployment
+- EigenX CLI installed (see below)
+
+#### Installation
+
+Install the EigenX CLI:
+
+```bash
+curl -fsSL https://eigenx-scripts.s3.us-east-1.amazonaws.com/install-eigenx.sh | bash
+```
+
+Or for development releases:
+
+```bash
+curl -fsSL https://eigenx-scripts.s3.us-east-1.amazonaws.com/install-eigenx.sh | bash -s -- --dev
+```
+
+Verify installation:
+
+```bash
+eigenx version
+```
+
+#### Authentication
+
+Authenticate with your Ethereum wallet:
+
+```bash
+eigenx auth login
+```
+
+This will:
+- Prompt you to sign a message with your wallet
+- Store your private key securely in the OS keyring
+- Associate your Ethereum address with your EigenX account
+
+To logout:
+
+```bash
+eigenx auth logout
+```
+
+#### Setting Deployment Environment
+
+Choose your deployment environment:
+
+```bash
+# List available environments
+eigenx environment list
+
+# Set deployment environment (e.g., sepolia, mainnet-alpha)
+eigenx environment set sepolia
+
+# Show current environment
+eigenx environment show
+```
+
+#### Working with Existing Projects
+
+Since you're deploying an existing project (like this basic-agent), you can proceed directly to building and deploying. The EigenX CLI will work with your existing Docker setup.
+
+**Note**: If you want to create a new project from an EigenX template instead, you can use:
+```bash
+eigenx app create <project-name> typescript
+```
+However, for this project, you can skip template creation and go straight to deployment.
+
+#### Building and Deploying
+
+EigenX can automatically build and deploy your Docker image, or you can build and push manually.
+
+**Option 1: Automatic Build and Deploy (Recommended)**
+
+```bash
+# Deploy from current directory (EigenX will build and push automatically)
+eigenx app deploy
+```
+
+**Option 2: Manual Build and Deploy**
+
+1. Build your Docker image for `linux/amd64`:
+
+```bash
+docker build --platform linux/amd64 -t myregistry/basic-agent:v1.0 .
+```
+
+2. Push to a container registry:
+
+```bash
+docker push myregistry/basic-agent:v1.0
+```
+
+3. Deploy using the image reference:
+
+```bash
+eigenx app deploy myregistry/basic-agent:v1.0
+```
+
+**Important Requirements:**
+- Image must target `linux/amd64` architecture
+- Application must run as root user (TEE requirement)
+
+#### Updating Your Deployment
+
+To update an existing deployment:
+
+```bash
+# Upgrade by app ID
+eigenx app upgrade <app-id> <new-image-ref>
+
+# Or by app name
+eigenx app upgrade basic-agent myregistry/basic-agent:v2.0
+```
+
+#### Lifecycle Management
+
+**Start a stopped app:**
+
+```bash
+eigenx app start <app-id|name>
+```
+
+**Stop a running app:**
+
+```bash
+eigenx app stop <app-id|name>
+```
+
+**Permanently remove an app:**
+
+```bash
+eigenx app terminate <app-id|name>
+```
+
+#### Monitoring
+
+**List all deployed apps:**
+
+```bash
+eigenx app list
+```
+
+**View detailed app information:**
+
+```bash
+eigenx app info <app-id|name>
+
+# Watch mode (continuously poll for updates)
+eigenx app info <app-id|name> --watch
+```
+
+**View application logs:**
+
+```bash
+eigenx app logs <app-id|name>
+
+# Watch mode (stream logs)
+eigenx app logs <app-id|name> --watch
+```
+
+#### Configuration
+
+**TLS Configuration:**
+
+Add TLS configuration to your project:
+
+```bash
+eigenx app configure tls
+```
+
+**Set Friendly Name:**
+
+```bash
+eigenx app name <app-id|name> <new-name>
+```
+
+#### Environment Variables
+
+EigenX supports encrypted environment variables for sensitive data:
+
+- **Encrypted Variables**: Stored securely in KMS, only accessible within the TEE
+- **Public Variables**: Stored onchain, visible but useful for configuration
+
+Set environment variables through the EigenX dashboard or CLI (when available).
+
+#### Architecture Benefits
+
+Deploying to EigenCloud provides several security and verifiability benefits:
+
+1. **Verifiable Execution**: Cryptographic attestation proves your app is running the exact Docker image you specified
+2. **Hardware Isolation**: Your application runs in a secure enclave isolated from the host system
+3. **Deterministic Identity**: Your app receives a consistent identity via KMS, enabling trustless interactions
+4. **Onchain Lifecycle**: App configuration and state are managed via smart contracts
+
+#### Telemetry
+
+EigenX collects anonymous usage data by default. You can manage telemetry:
+
+```bash
+# Check status
+eigenx telemetry --status
+
+# Disable telemetry
+eigenx telemetry --disable
+
+# Re-enable telemetry
+eigenx telemetry --enable
+```
+
+#### Additional Resources
+
+- **EigenX CLI Repository**: [https://github.com/Layr-Labs/eigenx-cli](https://github.com/Layr-Labs/eigenx-cli)
+- **Architecture Documentation**: See the EigenX CLI repository for detailed architecture docs
+- **Security Best Practices**: Refer to EigenX documentation for TEE security guidelines
+
+#### Important Notes
+
+⚠️ **EigenX is in alpha** and under active development:
+- Features may be added, removed, or modified
+- Interfaces will have breaking changes
+- Should be used **only for testing purposes** and **not in production**
+- Provided "as is" without guarantee of functionality or production support
+
+For production deployments, ensure you understand the current limitations and security model.
+
 ### Customizing the Entry Point
 
 You can customize which servers to start by modifying `src/index.ts`:
@@ -698,6 +939,7 @@ ISC
 - [OpenAI](https://openai.com/) - LLM provider
 - [Viem](https://viem.sh/) - Ethereum library
 - [Telegraf](https://telegraf.js.org/) - Telegram bot framework
+- [EigenX/EigenCloud](https://github.com/Layr-Labs/eigenx-cli) - TEE deployment platform
 
 ## Support
 
