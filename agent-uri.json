@@ -1,0 +1,45 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "basic-agent",
+  "description": "A flexible, multi-protocol AI agent runtime built with LangGraph, supporting Telegram, MCP (Model Context Protocol), A2A (Agent-to-Agent) protocols. This agent can be easily extended and customized for various use cases. It provides conversational AI capabilities, Agentic Ecosystem Research, and multichain workflows using OpenAI GPT models, EIP-8004 identity registry queries, and multichain agent-to-agent communication.",
+  "image": "ipfs://bafybeicsxo26bnhc6glwchbblqwwyqyzsxpy3gia3fljcs5cl3tjur6grm",
+  "endpoints": [
+    {
+      "name": "A2A",
+      "endpoint": "http://35.223.89.123:3001/a2a/v1",
+      "version": "0.3.0"
+    },
+    {
+      "name": "MCP",
+      "endpoint": "http://35.223.89.123:8001/mcp",
+      "capabilities": {},
+      "version": "2025-06-18"
+    },
+    {
+      "name": "ENS",
+      "endpoint": "dayksx.eth",
+      "version": "v1"
+    },
+    {
+      "name": "DID",
+      "endpoint": "did:pkh:eip155:11155111:0x224b11F0747c7688a10aCC15F785354aA6493ED6",
+      "version": "v1"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:11155111:0x224b11F0747c7688a10aCC15F785354aA6493ED6"
+    }
+  ],
+  "registrations": [
+    {
+      "agentId": 1673,
+      "agentRegistry": "eip155:11155111:0x8004a6090Cd10A7288092483047B097295Fb8847"
+    }
+  ],
+  "supportedTrust": [
+    "reputation",
+    "crypto-economic",
+    "tee-attestation"
+  ]
+}
+
