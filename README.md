@@ -1,6 +1,6 @@
 # Basic Agent
 
-A flexible, multi-protocol AI agent runtime built with LangGraph, supporting Telegram, MCP (Model Context Protocol), A2A (Agent-to-Agent), and Agent Card protocols. This agent can be easily extended and customized for various use cases.
+A flexible, multi-protocol AI agent runtime built with LangGraph, supporting Telegram, MCP (Model Context Protocol), A2A (Agent-to-Agent) protocols along with the Agent Card discovery. This agent can be easily extended and customized for various use cases.
 
 ## Features
 
@@ -85,6 +85,15 @@ AGENT_DESCRIPTION=Your agent description
 AGENT_HOSTNAME=localhost
 AGENT_URL=http://localhost:3000
 AGENT_STREAMING=false
+
+# Optional for monitoring
+LANGSMITH_TRACING=
+LANGSMITH_ENDPOINT=
+LANGSMITH_API_KEY=
+LANGSMITH_PROJECT=
+
+# Optional for web search
+TAVILY_API_KEY=
 ```
 
 4. Build the project:
@@ -161,6 +170,10 @@ docker-compose up -d --build
 1. Build the image:
 ```bash
 docker build -t basic-agent .
+```
+If cache issue:
+```bash
+docker build --no-cache -t basic-agent .
 ```
 
 2. Run the container:

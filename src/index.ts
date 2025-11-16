@@ -2,10 +2,10 @@ import { AgentRuntime } from "./app/AgentRuntime";
 
 const agentRuntime = new AgentRuntime();
 
-agentRuntime.registerTelegramClient().catch((error) => {
-    console.error("Failed to start Telegram client:", error);
-    process.exit(1);
-});
+// agentRuntime.registerTelegramClient().catch((error) => {
+//     console.error("Failed to start Telegram client:", error);
+//     process.exit(1);
+// });
 
 agentRuntime.createAgentCardServer(3000).catch((error) => {
     console.error("Failed to start Agent Card server:", error);

@@ -21,6 +21,7 @@ export const eip8004Search = tool(
         const contractAddress = EIP8004_CONFIG.CONTRACT_ADDRESS as `0x${string}`;
 
         try {
+            // Use Agent0 SDK
             const [tokenURI, owner] = await Promise.all([
                 publicClient.readContract({
                     address: contractAddress,
