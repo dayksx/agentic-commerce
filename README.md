@@ -62,15 +62,18 @@ MCP_REQUIRE_PAYMENT=true
 ## Running the Server Agent
 
 ### Development Mode
+
 ```bash
 pnpm dev
 ```
 
 This starts the server agent with:
+
 - Agent Card Server on port 3000
 - MCP Server on port 8001 (with payment enabled)
 
 ### Production Mode
+
 ```bash
 # Build the project
 pnpm build
