@@ -144,18 +144,55 @@ pnpm docker:ship
 
 ### Deploy to Oasis ROFL
 
+Navigate to the `agent` directory:
+
+```bash
+cd agent
+```
+
+#### Verify Current Deployment
+
+To check whether the source code in front of you is the one currently registered on-chain and running on the nodes, run:
+
+```bash
+# Linux
+oasis rofl build --verify
+
+# Other platforms
+docker run --platform linux/amd64 --volume .:/src -it ghcr.io/oasisprotocol/rofl-dev:main oasis rofl build --verify
+```
+
+#### Deploy your own instance
+
+To build your own instance run:
+
+```bash
+oasis rofl init --reset
+```
+
+Then create a new ROFL, set secrets and deploy it.
+
+```bash
+oasis rofl create --network testnet
+```
+
 #### Generate ORC Bundle
 
 This operation packs `docker-compose.yaml`, specific operating system components and the hash of a trusted block on the Sapphire chain. All these pieces are needed to safely execute the app inside a TEE.
 
 ```bash
-cd agent
-
 # Linux
 oasis rofl build
 
 # Other platforms
 docker run --platform linux/amd64 --volume .:/src -it ghcr.io/oasisprotocol/rofl-dev:main oasis rofl build
+```
+
+#### Encrypt secrets
+
+```bash
+# for each secret
+echo -n "<secret>" | oasis rofl secret set <ENV_VAR> -
 ```
 
 #### Update On-chain App Config
@@ -175,6 +212,29 @@ Your app will be deployed to a ROFL node. This is a light Oasis Node with suppor
 ```bash
 oasis rofl deploy
 ```
+
+#### Testing it out
+
+Obtain the URL of your agent by invoking
+
+```bash
+oasis rofl machine show
+```
+
+Look for the Proxy: section, for example:
+
+```bash
+Proxy:
+  Domain: m1106.test-proxy-b.rofl.app
+  Ports from compose file:
+    8001 (agentic-commerce): https://p8001.m1106.test-proxy-b.rofl.app
+    3000 (agentic-commerce): https://p3000.m1106.test-proxy-b.rofl.app
+```
+
+In the setup above the agent is available on:
+
+- [https://p8001.m1106.test-proxy-b.rofl.app](https://p8001.m1106.test-proxy-b.rofl.app)
+- [https://p3000.m1106.test-proxy-b.rofl.app](https://p3000.m1106.test-proxy-b.rofl.app)
 
 #### Pay for machine uptime
 
