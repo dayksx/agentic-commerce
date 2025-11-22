@@ -32,7 +32,7 @@ export class MCPServer implements Server {
     ) {
         this.executeWorkflow = executeWorkflow;
         this.port = port;
-        this.enablePayment = enablePayment ?? (process.env.MCP_REQUIRE_PAYMENT === 'true');
+        this.enablePayment = true;
     }
 
     /**
