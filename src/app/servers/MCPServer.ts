@@ -5,6 +5,7 @@ import express, { Express } from "express";
 import { Server as HttpServer } from "http";
 import { paymentMiddleware, Network } from "x402-express";
 import { createFacilitatorConfig, facilitator } from "@coinbase/x402";
+import { CdpClient } from "@coinbase/cdp-sdk";
 import { Server } from "../interfaces.js";
 import dotenv from 'dotenv';
 
@@ -21,6 +22,8 @@ export class MCPServer implements Server {
     private executeWorkflow: (prompt: string) => Promise<string>;
     private port: number;
     private enablePayment: boolean;
+    private cdpClient: CdpClient | null = null;
+    private paymentAddress: string | null = null;
 
     constructor(
         executeWorkflow: (prompt: string) => Promise<string>,
@@ -48,6 +51,11 @@ export class MCPServer implements Server {
 
         this.registerTool();
         
+        // Initialize CDP server wallet for payment receiving address
+        if (this.enablePayment) {
+            await this.initializePaymentAddress();
+        }
+        
         // Set up Express server
         this.expressApp = express();
         this.expressApp.use(express.json());
@@ -68,6 +76,52 @@ export class MCPServer implements Server {
     }
 
     /**
+     * Initializes the payment receiving address using CDP server wallet
+     */
+    private async initializePaymentAddress(): Promise<void> {
+        try {
+            // Check if a specific account name or address is provided in env (for reusing existing account)
+            const accountName = process.env.CDP_PAYMENT_ACCOUNT_NAME;
+            const accountAddress = process.env.CDP_PAYMENT_ACCOUNT_ADDRESS;
+            
+            this.cdpClient = new CdpClient();
+            
+            if (accountName) {
+                // Use getOrCreateAccount to reuse existing account by name or create new one
+                const account = await this.cdpClient.evm.getOrCreateAccount({ name: accountName });
+                this.paymentAddress = account.address;
+                console.log(`✅ Using CDP server wallet account (name: ${accountName}): ${this.paymentAddress}`);
+            } else if (accountAddress) {
+                // Try to get existing account by address
+                try {
+                    const account = await this.cdpClient.evm.getAccount({ address: accountAddress as `0x${string}` });
+                    this.paymentAddress = account.address;
+                    console.log(`✅ Using existing CDP server wallet account: ${this.paymentAddress}`);
+                } catch (error) {
+                    console.warn(`⚠️  Could not retrieve account ${accountAddress}, creating new account...`);
+                    const account = await this.cdpClient.evm.createAccount();
+                    this.paymentAddress = account.address;
+                    console.log(`✅ Created new CDP server wallet account: ${this.paymentAddress}`);
+                    console.log(`   Set CDP_PAYMENT_ACCOUNT_ADDRESS=${account.address} in .env to reuse this account`);
+                }
+            } else {
+                // Create a new account with a default name
+                const account = await this.cdpClient.evm.getOrCreateAccount({ name: "mcp-payment-receiver" });
+                this.paymentAddress = account.address;
+                console.log(`✅ Created CDP server wallet account for payments: ${this.paymentAddress}`);
+                console.log(`   Set CDP_PAYMENT_ACCOUNT_NAME=mcp-payment-receiver in .env to reuse this account`);
+            }
+        } catch (error) {
+            console.warn('⚠️  Failed to initialize CDP server wallet, falling back to environment variable or default address');
+            console.warn(`   Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            
+            // Fallback to env variable or default address
+            this.paymentAddress = process.env.MCP_PAYMENT_ADDRESS || "0x4D8aD86dEe297B5703E92465692999abDB0508c8";
+            console.log(`   Using payment address: ${this.paymentAddress}`);
+        }
+    }
+
+    /**
      * Registers routes for the MCP server
      */
     private async registerRoutes(): Promise<void> {
@@ -75,22 +129,35 @@ export class MCPServer implements Server {
 
         
         if (this.enablePayment) {
+            const paymentAddress = (this.paymentAddress || process.env.MCP_PAYMENT_ADDRESS || "0x4D8aD86dEe297B5703E92465692999abDB0508c8") as `0x${string}`;
+            
+            // Determine facilitator configuration
+            // Use CDP's facilitator for mainnet, testnet facilitator URL for testnet
+            const networkEnv = process.env.MCP_PAYMENT_NETWORK || "base-sepolia";
+            // Ensure network is one of the supported types
+            const network: "base-sepolia" | "base" = (networkEnv === "base" || networkEnv === "base-mainnet") ? "base" : "base-sepolia";
+            
+            // For mainnet with CDP, use CDP's facilitator; otherwise use testnet facilitator
+            const facilitatorConfig: { url: `https://${string}` } | ReturnType<typeof createFacilitatorConfig> = network === "base" && this.cdpClient
+                ? createFacilitatorConfig() // CDP facilitator config for mainnet
+                : { url: "https://x402.org/facilitator" as `https://${string}` }; // for testnet
+            
             this.expressApp.use(paymentMiddleware(
-                "0x4D8aD86dEe297B5703E92465692999abDB0508c8",
+                paymentAddress,
                 {
                   "/mcp": {
                     price: "$0.10",
-                    network: "base-sepolia",
+                    network: network,
                     config: {
                       description: "Access to premium content",
                       maxTimeoutSeconds: 300, // 5 minutes - gives more time for payment processing
                     }
                   }
                 },
-                {
-                    url: "https://x402.org/facilitator", // for testnet
-                }
+                facilitatorConfig
             ));
+            
+            console.log(`💰 Payment enabled - receiving payments at: ${paymentAddress} on ${network}`);
         }
 
         this.expressApp.post('/mcp', async (req, res) => {

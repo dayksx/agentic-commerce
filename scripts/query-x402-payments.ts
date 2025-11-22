@@ -1,13 +1,59 @@
 import dotenv from 'dotenv';
 import { createPublicClient, http, formatUnits, parseAbiItem } from 'viem';
 import { baseSepolia } from 'viem/chains';
+import { CdpClient } from '@coinbase/cdp-sdk';
 
 dotenv.config();
 
-// Your payment receiving address
-const PAYMENT_ADDRESS = '0x4D8aD86dEe297B5703E92465692999abDB0508c8';
 // USDC token address on Base Sepolia
 const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+const DEFAULT_PAYMENT_ADDRESS = '0x4D8aD86dEe297B5703E92465692999abDB0508c8';
+
+/**
+ * Gets the payment address from CDP server wallet (same as MCPServer)
+ * Falls back to environment variable or default address
+ */
+async function getPaymentAddress(): Promise<`0x${string}`> {
+  try {
+    const accountName = process.env.CDP_PAYMENT_ACCOUNT_NAME;
+    const accountAddress = process.env.CDP_PAYMENT_ACCOUNT_ADDRESS;
+    
+    const cdp = new CdpClient();
+    
+    if (accountName) {
+      // Use getOrCreateAccount to reuse existing account by name or create new one
+      const account = await cdp.evm.getOrCreateAccount({ name: accountName });
+      console.log(`✅ Using CDP server wallet account (name: ${accountName}): ${account.address}`);
+      return account.address;
+    } else if (accountAddress) {
+      // Try to get existing account by address
+      try {
+        const account = await cdp.evm.getAccount({ address: accountAddress as `0x${string}` });
+        console.log(`✅ Using existing CDP server wallet account: ${account.address}`);
+        return account.address;
+      } catch (error) {
+        console.warn(`⚠️  Could not retrieve account ${accountAddress}, using fallback address`);
+      }
+    } else {
+      // Try to get or create account with default name (same as MCPServer)
+      try {
+        const account = await cdp.evm.getOrCreateAccount({ name: "mcp-payment-receiver" });
+        console.log(`✅ Using CDP server wallet account: ${account.address}`);
+        return account.address;
+      } catch (error) {
+        console.warn(`⚠️  Could not create/get CDP account, using fallback address`);
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️  Failed to initialize CDP server wallet, using fallback address');
+    console.warn(`   Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+  
+  // Fallback to env variable or default address
+  const fallbackAddress = process.env.MCP_PAYMENT_ADDRESS || DEFAULT_PAYMENT_ADDRESS;
+  console.log(`   Using payment address: ${fallbackAddress}`);
+  return fallbackAddress as `0x${string}`;
+}
 
 // Create public client for Base Sepolia
 const publicClient = createPublicClient({
@@ -28,6 +74,7 @@ interface PaymentInfo {
  * Query USDC transfers to your payment address
  */
 async function queryPayments(limit: number = 100): Promise<PaymentInfo[]> {
+  const PAYMENT_ADDRESS = await getPaymentAddress();
   console.log(`🔍 Querying payments to ${PAYMENT_ADDRESS} on Base Sepolia...\n`);
 
   try {

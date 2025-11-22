@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "call-x402": "ts-node scripts/call-x402-endpoint.ts",
-    "query-payments": "ts-node scripts/query-x402-payments.ts"
+    "query-payments": "ts-node scripts/query-x402-payments.ts",
+    "query-payments-cdp": "ts-node scripts/query-payments-cdp-api.ts"
   },
   "keywords": [],
   "author": "",
