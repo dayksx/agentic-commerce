@@ -33,7 +33,7 @@ fetchWithPayment(MCP_ENDPOINT, {
     params: {
       name: 'query_agent_registry',
       arguments: {
-        prompt: 'Test query',
+        prompt: 'Find me the top 3 x402 endpoint in the x402 bazaar',
       },
     },
   }),

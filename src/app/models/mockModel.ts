@@ -2,7 +2,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { Model } from "../interfaces.js";
 import { MessagesAnnotation } from "@langchain/langgraph";
 import { AIMessage } from "@langchain/core/messages";
-import { mockTool } from "../tools/index.js";
+import { bazarTool, mockTool } from "../tools/index.js";
 
 /**
  * Mock LLM node implementation
@@ -18,7 +18,7 @@ export const mockModel: Model = async (state: typeof MessagesAnnotation.State) =
         apiKey: apiKey,
     });
 
-    const tools = [mockTool] as any;
+    const tools = [mockTool, bazarTool] as any;
     const llmWithTools = llm.bindTools(tools);
     const response = await llmWithTools.invoke(state.messages)
     return { messages: [response as AIMessage] };

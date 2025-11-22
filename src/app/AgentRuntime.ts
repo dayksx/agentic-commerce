@@ -10,7 +10,7 @@ import { MCPServer } from "./servers/MCPServer.js";
 import { AgentCardConfig } from "./config/AgentCardConfig.js";
 import { YieldMonitor } from "./services/YieldMonitor.js";
 
-import { mockTool } from "./tools/index.js";
+import { bazarTool, mockTool } from "./tools/index.js";
 
 export type WorkflowId = 'mcp' | string;
 export type Workflow = any
@@ -44,7 +44,7 @@ export class AgentRuntime {
     };
 
     private defineDefaultWorkflow() {
-        const tools = [mockTool] as any;
+        const tools = [mockTool, bazarTool] as any;
         const toolNode = new ToolNode(tools);
 
         return new StateGraph(MessagesAnnotation)
@@ -58,7 +58,7 @@ export class AgentRuntime {
 
     private defineMCPWorkflow() {
 
-        const tools = [mockTool] as any;
+        const tools = [mockTool, bazarTool] as any;
         const toolNode = new ToolNode(tools);
 
         return new StateGraph(MessagesAnnotation)

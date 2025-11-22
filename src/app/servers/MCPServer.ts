@@ -146,7 +146,7 @@ export class MCPServer implements Server {
                 paymentAddress,
                 {
                   "/mcp": {
-                    price: "$0.001",
+                    price: "$0.0001",
                     network: network,
                     config: {
                       description: "Access to premium content",

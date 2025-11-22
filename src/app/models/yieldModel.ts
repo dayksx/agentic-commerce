@@ -16,9 +16,16 @@ export const yieldModel: Model = async (state: typeof MessagesAnnotation.State) 
         const resultObj = typeof result === 'string' ? JSON.parse(result) : result;
         
         // Create a system message with the yield generation result
+        // Helper to safely stringify (handles BigInt)
+        const safeStringify = (obj: any): string => {
+            return JSON.stringify(obj, (key, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+            );
+        };
+        
         const content = resultObj.success 
             ? `Yield Generation successful: ${resultObj.message}`
-            : `Yield Generation: ${resultObj.message || JSON.stringify(resultObj)}`;
+            : `Yield Generation: ${resultObj.message || safeStringify(resultObj)}`;
         
         return {
             messages: [

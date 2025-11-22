@@ -6,9 +6,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// USDC token address on Base Sepolia
-const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
-// WETH address on Base Sepolia (for swapping)
+// USDC token addresses
+const USDC_ADDRESS_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Base Sepolia
+const USDC_ADDRESS_BASE_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"; // Base Mainnet
+// WETH address (same on both networks)
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 
 const schema = z.object({
@@ -47,23 +48,49 @@ export const yieldGenerationTool = tool(
       const account = await getPaymentAccount();
       console.log(`💰 Yield Generation: Using account ${account.address}`);
       
-      // Get USDC balance using CDP client
+      // IMPORTANT: Payments are received on Base Sepolia, but Trade API only supports Base Mainnet
+      // We check balance on Base Sepolia (where payments arrive)
+      // But we can only swap on Base Mainnet (where Trade API works)
+      // This means the account needs USDC on Base Mainnet to swap
+      
+      // Check balance on Base Sepolia (where x402 payments arrive)
       const cdp = new CdpClient();
-      const balances = await cdp.evm.listTokenBalances({
+      const balancesSepolia = await cdp.evm.listTokenBalances({
         address: account.address,
         network: "base-sepolia",
       });
       
-      // Find USDC balance
-      const usdcBalance = balances.balances.find(
-        (b) => b.token.contractAddress.toLowerCase() === USDC_ADDRESS.toLowerCase()
+      // Also check Base Mainnet balance (where swaps can happen)
+      const balancesMainnet = await cdp.evm.listTokenBalances({
+        address: account.address,
+        network: "base",
+      });
+      
+      // Find USDC balance on Base Sepolia (where payments arrive)
+      const usdcBalanceSepolia = balancesSepolia.balances.find(
+        (b) => b.token.contractAddress.toLowerCase() === USDC_ADDRESS_BASE_SEPOLIA.toLowerCase()
       );
       
+      // Find USDC balance on Base Mainnet (where swaps can happen)
+      const usdcBalanceMainnet = balancesMainnet.balances.find(
+        (b) => b.token.contractAddress.toLowerCase() === USDC_ADDRESS_BASE_MAINNET.toLowerCase()
+      );
+      
+      // Use Mainnet balance for swapping (since Trade API only works on Mainnet)
+      const usdcBalance = usdcBalanceMainnet;
+      const network = "base"; // Base mainnet (where Trade API works)
+      const usdcAddress = USDC_ADDRESS_BASE_MAINNET;
+      
       if (!usdcBalance) {
+        const sepoliaAmount = usdcBalanceSepolia 
+          ? formatUnits(BigInt(usdcBalanceSepolia.amount.amount), 6)
+          : "0";
+        
         return JSON.stringify({
           success: false,
-          message: "No USDC balance found in the account",
+          message: "No USDC balance found on Base Mainnet (required for swapping)",
           account: account.address,
+          note: `You have ${sepoliaAmount} USDC on Base Sepolia, but swaps require USDC on Base Mainnet. Bridge your USDC from Sepolia to Mainnet first, or wait for Base Sepolia Trade API support.`,
         });
       }
       
@@ -85,16 +112,16 @@ export const yieldGenerationTool = tool(
       // We'll attempt the swap and handle the error gracefully
       try {
         // Use account.swap() with correct API signature
-        // For Base Sepolia, we'll use WETH address as toToken (since native ETH isn't directly swappable)
-        // WETH address on Base Sepolia: 0x4200000000000000000000000000000000000006
+        // Using Base mainnet addresses (Trade API supports Base mainnet)
         const swapResult = await account.swap({
-          network: "base-sepolia",
-          fromToken: USDC_ADDRESS, // USDC on Base Sepolia
-          toToken: "0x4200000000000000000000000000000000000006", // WETH on Base Sepolia
+          network: network,
+          fromToken: usdcAddress, // USDC on Base mainnet
+          toToken: WETH_ADDRESS, // WETH on Base mainnet
           fromAmount: usdcAmount,
           slippageBps: 100, // 1% slippage tolerance
         });
         
+        console.log(`>>> Debug Swap result - transactionHash: ${swapResult.transactionHash}`);
         return JSON.stringify({
           success: true,
           message: `Successfully swapped ${formatUnits(usdcAmount, 6)} USDC to WETH`,
