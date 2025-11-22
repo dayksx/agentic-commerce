@@ -9,17 +9,25 @@ This project implements an AI agent runtime built with LangGraph that exposes it
 ## Architecture
 
 ### Server Agent
+
 The **server agent** is represented by the `AgentRuntime` class, which:
+
 - Runs an MCP server endpoint (default: port 8001)
 - Implements LangGraph workflows for agent execution
 - Integrates x402 payment middleware for monetized API access
 - Exposes tools and capabilities via the MCP protocol
 
 ### Client Agent
+
 The **client agent** is currently represented by a script (`call-x402-endpoint.ts`) that:
+
 - Makes HTTP requests to the MCP endpoint
 - Handles x402 payment flows using `x402-fetch`
 - Demonstrates payment-enabled client-server interaction
+
+## Infrastructure
+
+- Deployed on to [Oasis Runtime Off-Chain Logic (ROFL)](https://docs.oasis.io/build/rofl/)
 
 ## Prerequisites
 
@@ -27,6 +35,7 @@ The **client agent** is currently represented by a script (`call-x402-endpoint.t
 - pnpm (v10.6.5 or compatible)
 - A private key for wallet operations (for client payments)
 - Environment variables configured (see Setup)
+- [Oasis ROFL CLI](https://docs.oasis.io/build/tools/cli/setup)
 
 ## Installation
 
@@ -53,15 +62,18 @@ MCP_REQUIRE_PAYMENT=true
 ## Running the Server Agent
 
 ### Development Mode
+
 ```bash
 pnpm dev
 ```
 
 This starts the server agent with:
+
 - Agent Card Server on port 3000
 - MCP Server on port 8001 (with payment enabled)
 
 ### Production Mode
+
 ```bash
 # Build the project
 pnpm build
@@ -71,8 +83,60 @@ pnpm start
 ```
 
 The server will be available at:
+
 - Agent Card Server: `http://localhost:3000`
 - MCP Endpoint: `http://0.0.0.0:8001/mcp`
+
+## Deployment
+
+### Publishing the docker image
+
+Build the docker image and push it to the public registry
+
+```bash
+pnpm docker:ship
+```
+
+### Deploy to Oasis ROFL
+
+#### Generate orc bundle
+
+This operation packs `docker-compose.yaml`, specific operating system components and the hash of a trusted block on the Sapphire chain. All these pieces are needed to safely execute our app inside a TEE.
+
+```bash
+# linux
+oasis rofl build
+# or any other platform
+docker run --platform linux/amd64 --volume .:/src -it ghcr.io/oasisprotocol/rofl-dev:main oasis rofl build
+```
+
+#### Update On-chain App Config
+
+After any changes to the [app's policy](https://docs.oasis.io/build/rofl/features/manifest#policy) defined in the manifest, the on-chain app config needs to be updated in order for the changes to take effect.
+
+```bash
+oasis rofl update
+```
+
+#### Deploy app to a ROFL node
+
+ROFLs can be deployed to any ParaTime that has the ROFL module installed. Most common is Sapphire which implements all ROFL functionalities.
+
+Your app will be deployed to a ROFL node. This is a light Oasis Node with support for TEE and configured Sapphire ParaTime.
+
+```bash
+oasis rofl deploy
+```
+
+#### Pay for machine uptime
+
+Machines require gas to keep on running. Make sure there is enough gas to pay for execution.
+
+For example, to pay for 3 hours usage, run the following command:
+
+```bash
+oasis rofl machine top-up --term hour --term-count 3
+```
 
 ## Running the Client Agent
 
@@ -83,6 +147,7 @@ pnpm call-x402
 ```
 
 This script will:
+
 1. Create a wallet client configured for Base Sepolia testnet
 2. Make a POST request to the MCP endpoint
 3. Handle the x402 payment flow automatically
@@ -90,8 +155,8 @@ This script will:
 
 ## Project Structure
 
-```
-ethglobal-server-agent/
+```bash
+agentic-commerce/
 ├── src/
 │   ├── app/
 │   │   ├── AgentRuntime.ts      # Main runtime orchestrating workflows and servers
@@ -144,14 +209,14 @@ pnpm start
 ## Payment Configuration
 
 The MCP server is configured with x402 payment middleware:
+
 - **Price**: $0.10 per request
 - **Network**: Base Sepolia (testnet)
 - **Payment Address**: `0x4D8aD86dEe297B5703E92465692999abDB0508c8`
-- **Facilitator**: https://x402.org/facilitator
+- **Facilitator**: [https://x402.org/facilitator](https://x402.org/facilitator)
 
 Payment can be enabled/disabled via the `MCP_REQUIRE_PAYMENT` environment variable or the `enablePayment` parameter when creating the MCP server.
 
 ## License
 
 ISC
-
