@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Send, Bot, User } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 interface Message {
   id: string
@@ -110,7 +112,64 @@ export function A2AChatbot() {
                   : "bg-[#FAFAFC] text-[#2D2B42]"
               }`}
             >
-              <p className="text-sm">{message.content}</p>
+              {message.role === "assistant" ? (
+                <div className="text-sm markdown-content">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      h1: ({ children }) => <h1 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-sm font-bold mb-2 mt-3 first:mt-0">{children}</h3>,
+                      ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                      li: ({ children }) => <li className="ml-2">{children}</li>,
+                      code: ({ children, className }) => {
+                        const isInline = !className;
+                        return isInline ? (
+                          <code className="bg-[#F0F0F5] text-[#A78BFA] px-1.5 py-0.5 rounded text-xs font-mono">{children}</code>
+                        ) : (
+                          <code className={className}>{children}</code>
+                        );
+                      },
+                      pre: ({ children }) => (
+                        <pre className="bg-[#F0F0F5] p-3 rounded-lg overflow-x-auto mb-2 text-xs font-mono">
+                          {children}
+                        </pre>
+                      ),
+                      a: ({ href, children }) => (
+                        <a href={href} className="text-[#A78BFA] underline hover:text-[#8B5CF6]" target="_blank" rel="noopener noreferrer">
+                          {children}
+                        </a>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-4 border-[#A78BFA] pl-3 italic text-[#8F8F9D] my-2">
+                          {children}
+                        </blockquote>
+                      ),
+                      strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                      em: ({ children }) => <em className="italic">{children}</em>,
+                      hr: () => <hr className="my-3 border-[#F0F0F5]" />,
+                      table: ({ children }) => (
+                        <div className="overflow-x-auto my-2">
+                          <table className="min-w-full border-collapse border border-[#F0F0F5]">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({ children }) => <thead className="bg-[#F0F0F5]">{children}</thead>,
+                      tbody: ({ children }) => <tbody>{children}</tbody>,
+                      tr: ({ children }) => <tr className="border-b border-[#F0F0F5]">{children}</tr>,
+                      th: ({ children }) => <th className="border border-[#F0F0F5] px-2 py-1 text-left font-bold">{children}</th>,
+                      td: ({ children }) => <td className="border border-[#F0F0F5] px-2 py-1">{children}</td>,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              )}
               <p className={`text-[10px] mt-1 ${message.role === "user" ? "text-white/70" : "text-[#8F8F9D]"}`}>
                 {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
