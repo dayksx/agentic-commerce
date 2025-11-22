@@ -33,7 +33,7 @@ fetchWithPayment(MCP_ENDPOINT, {
     params: {
       name: 'query_agent_registry',
       arguments: {
-        prompt: 'Find me the top 3 x402 endpoint in the x402 bazaar',
+        prompt: 'Find me the top 2 x402 endpoints in the x402 bazaar and the top 3 ai agent in the EIP-8004 registry for conversational chat',
       },
     },
   }),

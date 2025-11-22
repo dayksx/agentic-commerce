@@ -23,6 +23,7 @@ agentRuntime.createMCPServer(8001, true).catch((error) => {
 // Monitors USDC transfers (0x036CbD53842c5426634e7929541eC2318f3dCF7e) to payment address
 // and triggers yield generation workflow when payments are received
 // Polls every 30 seconds (30000ms) - can be configured via YIELD_MONITOR_INTERVAL_MS env var
+
 agentRuntime.listenOnchainPayments(30000).catch((error) => {
     console.error("Failed to start onchain payment listener:", error);
     // Don't exit - payment listener is optional

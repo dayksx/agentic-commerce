@@ -13,8 +13,10 @@ export const bazarTool = tool(
     emptySchema.parse(input);
 
     try {
+      console.log("🔎 Fetching from x402 bazaar...");
       const { list } = useFacilitator(facilitator);
       const services = await list();
+      console.log(`🔎 Found ${services.items.length} items in x402 bazaar:`);
 
       const affordableServices = services.items.filter((item) =>
         item.accepts?.some(
