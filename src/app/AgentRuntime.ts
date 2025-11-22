@@ -3,10 +3,12 @@ import { HumanMessage } from "@langchain/core/messages";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 
 import { mockModel } from "./models/mockModel.js";
+import { yieldModel } from "./models/yieldModel.js";
 
 import { AgentCardServer } from "./servers/AgentCardServer.js";
 import { MCPServer } from "./servers/MCPServer.js";
 import { AgentCardConfig } from "./config/AgentCardConfig.js";
+import { YieldMonitor } from "./services/YieldMonitor.js";
 
 import { mockTool } from "./tools/index.js";
 
@@ -18,10 +20,12 @@ export class AgentRuntime {
     private agentCardServer: AgentCardServer | null = null;
     private mcpServer: MCPServer | null = null;
     private workflows: Map<WorkflowId, Workflow> = new Map();
+    private yieldMonitor: YieldMonitor | null = null;
 
     constructor() {
         this.workflows.set('default', this.defineDefaultWorkflow());
         this.workflows.set('mcp', this.defineMCPWorkflow());
+        this.workflows.set('yield', this.defineYieldWorkflow());
     }
 
     /**
@@ -58,12 +62,23 @@ export class AgentRuntime {
         const toolNode = new ToolNode(tools);
 
         return new StateGraph(MessagesAnnotation)
-            .addNode("eip8004Model", mockModel)
+            .addNode("mockModel", mockModel)
             .addNode("toolNode", toolNode)
-            .addEdge(START, "eip8004Model")
-            .addConditionalEdges("eip8004Model", this.shouldContinueToToolNode)
-            .addEdge("toolNode", "eip8004Model")
-            .addEdge("eip8004Model", END)
+            .addEdge(START, "mockModel")
+            .addConditionalEdges("mockModel", this.shouldContinueToToolNode)
+            .addEdge("toolNode", "mockModel")
+            .compile();
+    }
+
+    /**
+     * Defines the yield generation workflow
+     * This workflow is triggered by onchain USDC transfer events
+     */
+    private defineYieldWorkflow() {
+        return new StateGraph(MessagesAnnotation)
+            .addNode("yieldModel", yieldModel)
+            .addEdge(START, "yieldModel")
+            .addEdge("yieldModel", END)
             .compile();
     }
 
@@ -108,6 +123,57 @@ export class AgentRuntime {
             agentCard
         });
         await this.agentCardServer.start();
+    }
+
+    /**
+     * Listens for onchain USDC payments on Base Sepolia
+     * Monitors USDC transfers (0x036CbD53842c5426634e7929541eC2318f3dCF7e) to the payment address
+     * and triggers the yield generation workflow when payments are received
+     * 
+     * @param pollIntervalMs - Polling interval in milliseconds (default: 30000 = 30 seconds)
+     */
+    public async listenOnchainPayments(pollIntervalMs?: number): Promise<void> {
+        if (this.yieldMonitor) {
+            console.warn("Onchain payment listener is already running");
+            return;
+        }
+
+        this.yieldMonitor = new YieldMonitor(pollIntervalMs);
+        
+        // Set up event handler to trigger yield workflow when USDC is received
+        this.yieldMonitor.onUSDCTransfer(async (event) => {
+            console.log(`💰 USDC payment received: ${event.amountFormatted} USDC from ${event.from}`);
+            console.log(`💰 Triggering yield generation workflow...`);
+            
+            try {
+                const yieldWorkflow = this.workflows.get('yield');
+                if (yieldWorkflow) {
+                    await yieldWorkflow.invoke({
+                        messages: [
+                            new HumanMessage(
+                                `Generate yield: Convert 25% of received USDC (${event.amountFormatted} USDC from transaction ${event.transactionHash}) to ETH`
+                            )
+                        ]
+                    });
+                }
+            } catch (error) {
+                console.error("Error executing yield workflow:", error);
+            }
+        });
+
+        await this.yieldMonitor.start();
+        console.log("💰 Listening for USDC payments on Base Sepolia...");
+    }
+
+    /**
+     * Stops listening for onchain payments
+     */
+    public stopListeningOnchainPayments(): void {
+        if (this.yieldMonitor) {
+            this.yieldMonitor.stop();
+            this.yieldMonitor = null;
+            console.log("💰 Stopped listening for onchain payments");
+        }
     }
 
 }
