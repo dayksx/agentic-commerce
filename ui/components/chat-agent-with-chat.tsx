@@ -132,16 +132,27 @@ export function ChatAgentWithChat({ photo, address = "0x0000...0000", ens, onSen
             <p className="text-sm font-medium text-[#8F8F9D] mt-1">A2A Assistant</p>
           </div>
         </div>
-        <div className="group p-3 rounded-xl bg-[#FAFAFC] hover:bg-[#F0F0F5] transition-colors border border-transparent hover:border-[#E0E0EB]">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8F8F9D]">
-              Description
-            </span>
-            <div className="w-1.5 h-1.5 rounded-full bg-[#D4FF00]" />
+        <div className="space-y-3">
+          <div className="group p-3 rounded-xl bg-[#FAFAFC] hover:bg-[#F0F0F5] transition-colors border border-transparent hover:border-[#E0E0EB]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8F8F9D]">
+                Description
+              </span>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#D4FF00]" />
+            </div>
+            <p className="text-xs font-medium text-[#2D2B42] leading-relaxed">
+              Chat Agent that calls relevant agents leveraging the EIP-8004 registry and uses A2A protocol to manage transactions.
+            </p>
           </div>
-          <p className="text-xs font-medium text-[#2D2B42] leading-relaxed">
-            Chat Agent that calls relevant agents leveraging the EIP-8004 registry and uses A2A protocol to manage transactions.
-          </p>
+          <div className="group p-3 rounded-xl bg-[#FAFAFC] hover:bg-[#F0F0F5] transition-colors border border-transparent hover:border-[#E0E0EB]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8F8F9D]">
+                Ethereum Address
+              </span>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#D4FF00]" />
+            </div>
+            <p className="text-xs font-medium text-[#2D2B42] truncate font-mono">0x61c305F7ba5B29ba363F92cFC9a40991E46b8f3e</p>
+          </div>
         </div>
       </div>
 
