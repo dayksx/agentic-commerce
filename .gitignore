@@ -64,3 +64,4 @@ coverage/
 # Documentation and guides
 docs/
 
+*.orc

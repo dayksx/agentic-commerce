@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  agentic-commerce:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentic-commerce
+    ports:
+      - "8001:8001"
+    environment:
+      - NODE_ENV=production
+      - MCP_REQUIRE_PAYMENT=${MCP_REQUIRE_PAYMENT:-true}
+      - MCP_ENDPOINT=${MCP_ENDPOINT:-http://0.0.0.0:8001/mcp}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:8001/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - agentic-network
+
+networks:
+  agentic-network:
+    driver: bridge
