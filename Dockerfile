@@ -21,7 +21,10 @@ COPY --from=builder /app/dist ./dist
 COPY tsconfig.json ./
 
 EXPOSE 8001
+<<<<<<< Updated upstream
 EXPOSE 3000
+=======
+>>>>>>> Stashed changes
 
 ENV NODE_ENV=production
 
