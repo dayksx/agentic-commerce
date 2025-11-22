@@ -3,8 +3,12 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 import express, { Express } from "express";
 import { Server as HttpServer } from "http";
-import { paymentMiddleware } from "x402-express";
-import { Server } from "../interfaces";
+import { paymentMiddleware, Network } from "x402-express";
+import { createFacilitatorConfig, facilitator } from "@coinbase/x402";
+import { Server } from "../interfaces.js";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 /**
  * MCP Server that exposes a LangGraph workflow as an MCP tool.
@@ -37,7 +41,6 @@ export class MCPServer implements Server {
             return;
         }
 
-        // Create the MCP server
         this.server = new McpServer({
             name: "basic-agent-mcp-server",
             version: "1.0.0"
@@ -49,7 +52,7 @@ export class MCPServer implements Server {
         this.expressApp = express();
         this.expressApp.use(express.json());
 
-        this.registerRoutes();
+        await this.registerRoutes();
 
         this.httpServer = this.expressApp.listen(this.port, () => {
             const address = this.httpServer?.address();
@@ -67,13 +70,17 @@ export class MCPServer implements Server {
     /**
      * Registers routes for the MCP server
      */
-    private registerRoutes(): void {
+    private async registerRoutes(): Promise<void> {
         if (!this.expressApp) return;
 
-        // Appliquer le middleware de paiement uniquement si activé
+        const facilitatorConfig = createFacilitatorConfig(
+            process.env.CDP_API_KEY_ID,
+            process.env.CDP_API_KEY_SECRET
+          );
+        
         if (this.enablePayment) {
             this.expressApp.use(paymentMiddleware(
-                "0x224b11F0747c7688a10aCC15F785354aA6493ED6",
+                "0x4D8aD86dEe297B5703E92465692999abDB0508c8",
                 {
                   "/mcp": {
                     price: "$0.10",
@@ -82,7 +89,8 @@ export class MCPServer implements Server {
                       description: "Access to premium content",
                     }
                   }
-                }
+                },
+                facilitatorConfig
             ));
         }
 

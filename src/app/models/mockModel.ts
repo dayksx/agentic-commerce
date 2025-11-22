@@ -1,14 +1,14 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { Model } from "../interfaces";
+import { Model } from "../interfaces.js";
 import { MessagesAnnotation } from "@langchain/langgraph";
-import { AIMessage } from "langchain";
-import { eip8004Search } from "../tools";
+import { AIMessage } from "@langchain/core/messages";
+import { mockTool } from "../tools/index.js";
 
 /**
- * EIP-8004 LLM node implementation
- * Lists agent identity NFTs from EIP-8004 identity registry ERC721
+ * Mock LLM node implementation
+ * Uses GPT-4o-mini model for chat completions
  */
-export const eip8004Model: Model = async (state: typeof MessagesAnnotation.State) => {
+export const mockModel: Model = async (state: typeof MessagesAnnotation.State) => {
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) throw new Error("OPENAI_API_KEY environment variable is not set");
@@ -18,7 +18,7 @@ export const eip8004Model: Model = async (state: typeof MessagesAnnotation.State
         apiKey: apiKey,
     });
 
-    const tools = [eip8004Search] as any;
+    const tools = [mockTool] as any;
     const llmWithTools = llm.bindTools(tools);
     const response = await llmWithTools.invoke(state.messages)
     return { messages: [response as AIMessage] };

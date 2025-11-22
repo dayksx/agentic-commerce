@@ -1,5 +1,5 @@
 import packageJson from '../../../package.json';
-import { AgentCard, AgentCapabilities, AgentSkill, TransportProtocol } from '../servers/AgentCardServer';
+import { AgentCard, AgentCapabilities, AgentSkill, TransportProtocol } from '../servers/AgentCardServer.js';
 
 /**
  * Configuration options for building an AgentCard
@@ -104,7 +104,7 @@ export class AgentCardConfig {
             protocolVersion: '0.3.0',
             name: config.name!,
             description: config.description!,
-            url: `${config.baseUrl}/a2a/v1`,
+            url: `${config.baseUrl}/mcp`,
             preferredTransport: TransportProtocol.JSONRPC,
             version: config.version!,
             capabilities,

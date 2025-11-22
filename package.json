@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "call-x402": "ts-node scripts/call-x402-endpoint.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.38.6",
+    "@coinbase/x402": "^0.7.1",
     "@langchain/core": "^1.0.2",
     "@langchain/langgraph": "^1.0.1",
     "@langchain/mcp-adapters": "^1.0.0",
@@ -31,6 +34,7 @@
     "telegraf": "^4.16.3",
     "viem": "^2.38.6",
     "x402-express": "^0.7.1",
+    "x402-fetch": "^0.7.3",
     "zod": "^3.23.8"
   }
 }
