@@ -1,39 +1,76 @@
 "use client"
 
-import { Activity } from "lucide-react"
 import { useState } from "react"
-import { A2AChatbot } from "@/components/a2a-chatbot"
-import { A2AAgentCard } from "@/components/a2a-agent-card"
+import { HumanAgentCard } from "@/components/human-agent-card"
+import { ChatAgentWithChat } from "@/components/chat-agent-with-chat"
+import { ServerAgentCard } from "@/components/server-agent-card"
 
 export default function A2APage() {
+  const [highlightServices, setHighlightServices] = useState(false)
+
+  const handleSendMessage = () => {
+    setHighlightServices(true)
+    setTimeout(() => {
+      setHighlightServices(false)
+    }, 2000) // Highlight for 2 seconds
+  }
+
   return (
     <div className="min-h-screen bg-[#F4F4F8] p-6 md:p-10 font-sans selection:bg-[#FF9F7C] selection:text-white">
-      <header className="mb-10 flex items-center justify-between max-w-[1600px] mx-auto">
-        <div>
-          <h1 className="text-3xl font-bold text-[#2D2B42] tracking-tight">A2A Chatbot</h1>
-          <p className="text-sm font-medium text-[#8F8F9D] mt-1">Agent-to-Agent Communication</p>
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr] lg:grid-cols-[auto_1fr_1fr] gap-4 max-w-[1600px] mx-auto items-stretch">
+        {/* First Box: Human Agent */}
+        <div className="min-w-0">
+          <HumanAgentCard 
+            address="0x4D8aD86dEe297B5703E92465692999abDB0508c8"
+            ens="dayksx.eth"
+          />
         </div>
-        <div className="flex items-center gap-6">
-          <div className="text-right hidden sm:block">
-            <p className="text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest">System Load</p>
-            <p className="text-xl font-bold text-[#2D2B42] tracking-tight">42%</p>
+
+        {/* Second Box: Chat Agent with Chat */}
+        <ChatAgentWithChat 
+          address="0x4D8aD86dEe297B5703E92465692999abDB0508c8"
+          ens="dayksx.eth"
+          onSendMessage={handleSendMessage}
+        />
+
+        {/* Third Column: Server Agents Stacked */}
+        <div className="h-full flex flex-col gap-4">
+          {/* Server Agent 1 */}
+          <div className="flex-1 min-h-0">
+            <ServerAgentCard 
+              address="0x4D8aD86dEe297B5703E92465692999abDB0508c8"
+              ens="dayksx.eth"
+              services={["Bazaar Research", "Agent Research"]}
+              serverWalletAddress="0x42849E96716efDBCCb6416e7E099830C0b1Eb34f"
+              title="Server Agent"
+              showEndpoints={true}
+              highlightServices={highlightServices}
+            />
           </div>
 
-          <div className="w-12 h-12 rounded-full bg-white shadow-lg shadow-slate-200/50 flex items-center justify-center text-[#2D2B42]">
-            <Activity size={20} strokeWidth={2.5} />
+          {/* Server Agent 2 */}
+          <div className="flex-shrink-0">
+            <ServerAgentCard 
+              address="0x4D8aD86dEe297B5703E92465692999abDB0508c8"
+              ens="dayksx.eth"
+              services={["agent reputation scoring"]}
+              serverWalletAddress="0x42849E96716efDBCCb6416e7E099830C0b1Eb34f"
+              title="Server Agent 2"
+              compact={true}
+            />
           </div>
-        </div>
-      </header>
 
-      <div className="flex flex-col lg:flex-row gap-8 max-w-[1600px] mx-auto">
-        {/* LEFT HALF: Chatbot */}
-        <div className="flex-1 w-full lg:w-1/2">
-          <A2AChatbot />
-        </div>
-
-        {/* RIGHT HALF: Agent Card */}
-        <div className="flex-1 w-full lg:w-1/2">
-          <A2AAgentCard />
+          {/* Server Agent 3 */}
+          <div className="flex-shrink-0">
+            <ServerAgentCard 
+              address="0x4D8aD86dEe297B5703E92465692999abDB0508c8"
+              ens="dayksx.eth"
+              services={["agent feedback management"]}
+              serverWalletAddress="0x42849E96716efDBCCb6416e7E099830C0b1Eb34f"
+              title="Server Agent 3"
+              compact={true}
+            />
+          </div>
         </div>
       </div>
     </div>
