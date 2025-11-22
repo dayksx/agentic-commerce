@@ -73,10 +73,6 @@ export class MCPServer implements Server {
     private async registerRoutes(): Promise<void> {
         if (!this.expressApp) return;
 
-        const facilitatorConfig = createFacilitatorConfig(
-            process.env.CDP_API_KEY_ID,
-            process.env.CDP_API_KEY_SECRET
-          );
         
         if (this.enablePayment) {
             this.expressApp.use(paymentMiddleware(
@@ -87,10 +83,13 @@ export class MCPServer implements Server {
                     network: "base-sepolia",
                     config: {
                       description: "Access to premium content",
+                      maxTimeoutSeconds: 300, // 5 minutes - gives more time for payment processing
                     }
                   }
                 },
-                facilitatorConfig
+                {
+                    url: "https://x402.org/facilitator", // for testnet
+                }
             ));
         }
 

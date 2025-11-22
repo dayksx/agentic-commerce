@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
+import { createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { baseSepolia } from 'viem/chains';
 import { wrapFetchWithPayment, decodeXPaymentResponse } from 'x402-fetch';
 
 dotenv.config();
@@ -7,8 +9,16 @@ dotenv.config();
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const MCP_ENDPOINT = process.env.MCP_ENDPOINT || 'http://0.0.0.0:8001/mcp';
 
+// Create wallet client with base-sepolia chain configuration
 const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`);
-const fetchWithPayment = wrapFetchWithPayment(fetch, account);
+const walletClient = createWalletClient({
+  account,
+  transport: http(),
+  chain: baseSepolia,
+});
+
+// Type assertion needed due to version mismatch between x402-fetch and viem types
+const fetchWithPayment = wrapFetchWithPayment(fetch, walletClient as any);
 
 fetchWithPayment(MCP_ENDPOINT, {
   method: 'POST',
