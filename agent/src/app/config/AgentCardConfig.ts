@@ -45,10 +45,10 @@ export class AgentCardConfig {
             baseUrl,
             name: options.name || this.getEnvOrPackageValue('AGENT_NAME', packageJson.name, 'basic-agent'),
             version: options.version || this.getEnvOrPackageValue('AGENT_VERSION', packageJson.version, '1.0.0'),
-            description: options.description || 
+            description: options.description ||
                 this.getEnvOrPackageValue(
-                    'AGENT_DESCRIPTION', 
-                    packageJson.description || '', 
+                    'AGENT_DESCRIPTION',
+                    packageJson.description || '',
                     'A basic LangGraph agent using OpenAI for conversational AI capabilities'
                 ),
             streaming: options.streaming ?? this.getEnvBoolean('AGENT_STREAMING', false),

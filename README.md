@@ -1,33 +1,38 @@
-# ETHGlobal Server Agent
+# Agentic Commerce
 
-This project is an **ETHGlobal hackathon** submission that demonstrates a server agent architecture with payment integration using **Coinbase Developer Platform (CDP)** for **x402** payments.
+This project is an **ETHGlobal hackathon** submission that demonstrates a full-stack agentic commerce platform with payment integration using **Coinbase Developer Platform (CDP)** for **x402** payments.
 
 ## Overview
 
-This project implements an AI agent runtime built with LangGraph that exposes its capabilities through an MCP (Model Context Protocol) endpoint. The server agent requires payment via x402 (HTTP 402 Payment Required) protocol, and the client agent demonstrates how to interact with the server using x402 payment flows.
+This monorepo implements an AI agent runtime built with LangGraph that exposes its capabilities through an MCP (Model Context Protocol) endpoint, paired with a modern Next.js UI for agent interaction and payment management. The server agent requires payment via x402 (HTTP 402 Payment Required) protocol.
 
 ## Architecture
 
-### Server Agent
+The project is organized as a monorepo with two main packages:
 
-The **server agent** is represented by the `AgentRuntime` class, which:
+### Agent (`agent/`)
 
-- Runs an MCP server endpoint (default: port 8001)
-- Implements LangGraph workflows for agent execution
-- Integrates x402 payment middleware for monetized API access
-- Exposes tools and capabilities via the MCP protocol
+The **agent package** contains the server-side agent runtime:
 
-### Client Agent
+- **AgentRuntime**: Core runtime orchestrating LangGraph workflows and servers
+- **MCP Server**: Model Context Protocol endpoint (port 8001) with x402 payment middleware
+- **Agent Card Server**: Agent discovery and metadata service (port 3000)
+- **Tools & Models**: Extensible agent capabilities including yield monitoring, bazaar integration, and more
+- **Client Scripts**: Utilities for testing x402 payment flows
 
-The **client agent** is currently represented by a script (`call-x402-endpoint.ts`) that:
+### UI (`ui/`)
 
-- Makes HTTP requests to the MCP endpoint
-- Handles x402 payment flows using `x402-fetch`
-- Demonstrates payment-enabled client-server interaction
+The **UI package** is a Next.js application providing:
+
+- **Agent-to-Agent (A2A) Interface**: Chat-based agent interaction at `/a2a`
+- **Payment Dashboard**: x402 payment tracking and management
+- **Treasury Management**: Financial monitoring and allocation views
+- **CRM Integration**: Customer relationship management placeholders
+- **Modern UI Components**: Built with Radix UI and Tailwind CSS
 
 ## Infrastructure
 
-- Deployed on to [Oasis Runtime Off-Chain Logic (ROFL)](https://docs.oasis.io/build/rofl/)
+- Deployed on [Oasis Runtime Off-Chain Logic (ROFL)](https://docs.oasis.io/build/rofl/)
 
 ## Prerequisites
 
@@ -39,17 +44,26 @@ The **client agent** is currently represented by a script (`call-x402-endpoint.t
 
 ## Installation
 
+Install dependencies for both packages:
+
 ```bash
-# Install dependencies
+# Install agent dependencies
+cd agent
+pnpm install
+
+# Install UI dependencies
+cd ../ui
 pnpm install
 ```
 
 ## Setup
 
-Create a `.env` file in the project root with the following variables:
+### Agent Configuration
+
+Create a `.env` file in the `agent/` directory:
 
 ```env
-# Required for client agent (payment operations)
+# Required for client operations (payment handling)
 PRIVATE_KEY=your_private_key_here
 
 # Optional: MCP endpoint URL (defaults to http://0.0.0.0:8001/mcp)
@@ -59,54 +73,88 @@ MCP_ENDPOINT=http://0.0.0.0:8001/mcp
 MCP_REQUIRE_PAYMENT=true
 ```
 
-## Running the Server Agent
+### UI Configuration
+
+Create a `.env.local` file in the `ui/` directory:
+
+```env
+# Add any UI-specific environment variables here
+NEXT_PUBLIC_AGENT_ENDPOINT=http://localhost:3000
+```
+
+## Running the Application
 
 ### Development Mode
 
+**Start the Agent Server:**
+
 ```bash
+cd agent
 pnpm dev
 ```
 
-This starts the server agent with:
+This starts:
 
 - Agent Card Server on port 3000
 - MCP Server on port 8001 (with payment enabled)
 
-### Production Mode
+**Start the UI (in a separate terminal):**
 
 ```bash
-# Build the project
-pnpm build
-
-# Start the server
-pnpm start
+cd ui
+pnpm dev
 ```
 
-The server will be available at:
+This starts the Next.js application on port 3001.
 
+Access the application at:
+
+- UI: `http://localhost:3001`
 - Agent Card Server: `http://localhost:3000`
 - MCP Endpoint: `http://0.0.0.0:8001/mcp`
 
-## Deployment
+### Production Mode
 
-### Publishing the docker image
-
-Build the docker image and push it to the public registry
+**Build and run the agent:**
 
 ```bash
+cd agent
+pnpm build
+pnpm start
+```
+
+**Build and run the UI:**
+
+```bash
+cd ui
+pnpm build
+pnpm start
+```
+
+## Deployment
+
+### Publishing the Docker Image
+
+Build and push the agent Docker image:
+
+```bash
+cd agent
 pnpm docker:ship
 ```
 
 ### Deploy to Oasis ROFL
 
-#### Generate orc bundle
+#### Generate ORC Bundle
 
-This operation packs `docker-compose.yaml`, specific operating system components and the hash of a trusted block on the Sapphire chain. All these pieces are needed to safely execute our app inside a TEE.
+This operation packs `docker-compose.yaml`, specific operating system components and the hash of a trusted block on the Sapphire chain. All these pieces are needed to safely execute the app inside a TEE.
 
 ```bash
-# linux
+cd agent
+
+# Linux
 oasis rofl build
-# or any other platform
+
+# Other platforms
 docker run --platform linux/amd64 --volume .:/src -it ghcr.io/oasisprotocol/rofl-dev:main oasis rofl build
 ```
 
@@ -138,11 +186,14 @@ For example, to pay for 3 hours usage, run the following command:
 oasis rofl machine top-up --term hour --term-count 3
 ```
 
-## Running the Client Agent
+## Testing
 
-To test the client agent that calls the x402-enabled MCP endpoint:
+### Test x402 Payment Flows
+
+To test the agent's x402-enabled MCP endpoint:
 
 ```bash
+cd agent
 pnpm call-x402
 ```
 
@@ -153,27 +204,79 @@ This script will:
 3. Handle the x402 payment flow automatically
 4. Display the response and payment information
 
-## Project Structure
+### Query Payment History
 
 ```bash
+cd agent
+pnpm query-payments
+```
+
+### Test UI Payments
+
+```bash
+cd ui
+pnpm test:payments
+```
+
+## Project Structure
+
+```plaintext
 agentic-commerce/
-├── src/
+├── agent/                          # Backend agent runtime
+│   ├── src/
+│   │   ├── index.ts               # Entry point
+│   │   └── app/
+│   │       ├── AgentRuntime.ts    # Main runtime orchestrator
+│   │       ├── servers/
+│   │       │   ├── MCPServer.ts   # MCP server with x402 payments
+│   │       │   └── AgentCardServer.ts
+│   │       ├── models/            # LangGraph model implementations
+│   │       │   ├── mockModel.ts
+│   │       │   └── yieldModel.ts
+│   │       ├── tools/             # Agent tools and capabilities
+│   │       │   ├── agentsSearchTool.ts
+│   │       │   ├── bazarTool.ts
+│   │       │   └── index.ts
+│   │       ├── services/          # Business logic services
+│   │       │   └── YieldMonitor.ts
+│   │       └── config/            # Configuration management
+│   │           └── AgentCardConfig.ts
+│   ├── client/                    # Client utilities
+│   │   ├── call-x402-endpoint.ts
+│   │   └── query-x402-payments.ts
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   └── package.json
+│
+├── ui/                             # Frontend Next.js application
 │   ├── app/
-│   │   ├── AgentRuntime.ts      # Main runtime orchestrating workflows and servers
-│   │   ├── servers/
-│   │   │   ├── MCPServer.ts     # MCP server with x402 payment integration
-│   │   │   └── AgentCardServer.ts
-│   │   ├── models/              # LangGraph model implementations
-│   │   ├── tools/               # Agent tools and capabilities
-│   │   └── config/              # Configuration management
-│   └── index.ts                 # Entry point
-├── scripts/
-│   └── call-x402-endpoint.ts    # Client agent script
-├── package.json
+│   │   ├── page.tsx               # Homepage
+│   │   ├── layout.tsx
+│   │   ├── a2a/                   # Agent-to-Agent interface
+│   │   │   └── page.tsx
+│   │   └── api/                   # API routes
+│   │       ├── a2a/
+│   │       └── payments/
+│   ├── components/
+│   │   ├── a2a-agent-card.tsx     # A2A components
+│   │   ├── a2a-chatbot.tsx
+│   │   ├── agent-card.tsx
+│   │   ├── payments-table.tsx     # Payment management
+│   │   ├── treasury-card.tsx      # Treasury dashboard
+│   │   ├── crm-table.tsx          # CRM components
+│   │   └── ui/                    # Reusable UI components
+│   ├── lib/
+│   │   ├── utils.ts
+│   │   └── mock-data/
+│   ├── scripts/                   # Utility scripts
+│   └── package.json
+│
 └── README.md
 ```
 
 ## Key Technologies
+
+### Agent Package
 
 - **LangGraph**: Agent workflow orchestration
 - **MCP (Model Context Protocol)**: Protocol for agent communication
@@ -182,7 +285,18 @@ agentic-commerce/
 - **Express**: HTTP server framework
 - **TypeScript**: Type-safe development
 
+### UI Package
+
+- **Next.js 15**: React framework with App Router
+- **Radix UI**: Accessible component primitives
+- **Tailwind CSS**: Utility-first styling
+- **Recharts**: Data visualization
+- **React Hook Form**: Form management
+- **Zod**: Schema validation
+
 ## Features
+
+### Agent Runtime
 
 - ✅ MCP server with HTTP/SSE transport
 - ✅ x402 payment integration for monetized API access
@@ -190,12 +304,28 @@ agentic-commerce/
 - ✅ Extensible tool and model system
 - ✅ Agent Card Server for agent discovery
 - ✅ Client-side payment handling with x402-fetch
+- ✅ Yield monitoring and financial tools
+- ✅ Bazaar integration for agent marketplace
+
+### User Interface
+
+- ✅ Agent-to-Agent (A2A) chat interface
+- ✅ Payment tracking and history
+- ✅ Treasury management dashboard
+- ✅ Allocation visualization with pie charts
+- ✅ CRM table components
+- ✅ Responsive design with dark/light mode
+- ✅ Modern component library with Radix UI
 
 ## Development
 
-The project uses TypeScript and requires compilation before running in production:
+### Agent Development
+
+The agent package uses TypeScript and requires compilation before running in production:
 
 ```bash
+cd agent
+
 # Watch mode (development)
 pnpm dev
 
@@ -204,6 +334,26 @@ pnpm build
 
 # Run production build
 pnpm start
+```
+
+### UI Development
+
+The UI package uses Next.js with hot module replacement:
+
+```bash
+cd ui
+
+# Development mode with hot reload
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Run production server
+pnpm start
+
+# Lint code
+pnpm lint
 ```
 
 ## Payment Configuration
