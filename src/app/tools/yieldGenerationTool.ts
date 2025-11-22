@@ -79,21 +79,48 @@ export const yieldGenerationTool = tool(
         });
       }
       
-      console.log(`💰 Yield Generation: Would swap ${formatUnits(usdcAmount, 6)} USDC (${percentage}% of ${formatUnits(totalUSDC, 6)} USDC) to ETH`);
+      console.log(`💰 Yield Generation: Attempting to swap ${formatUnits(usdcAmount, 6)} USDC (${percentage}% of ${formatUnits(totalUSDC, 6)} USDC) to ETH`);
       
       // Note: CDP Trade API currently only supports Base Mainnet and Ethereum Mainnet, not Base Sepolia
-      // This functionality will be enabled once CDP Trade API adds Base Sepolia support
-      return JSON.stringify({
-        success: false,
-        message: "Yield generation calculated but swap not executed - CDP Trade API only supports Base Mainnet, not Base Sepolia",
-        calculated: {
-          usdcToSwap: formatUnits(usdcAmount, 6),
+      // We'll attempt the swap and handle the error gracefully
+      try {
+        // Use account.swap() with correct API signature
+        // For Base Sepolia, we'll use WETH address as toToken (since native ETH isn't directly swappable)
+        // WETH address on Base Sepolia: 0x4200000000000000000000000000000000000006
+        const swapResult = await account.swap({
+          network: "base-sepolia",
+          fromToken: USDC_ADDRESS, // USDC on Base Sepolia
+          toToken: "0x4200000000000000000000000000000000000006", // WETH on Base Sepolia
+          fromAmount: usdcAmount,
+          slippageBps: 100, // 1% slippage tolerance
+        });
+        
+        return JSON.stringify({
+          success: true,
+          message: `Successfully swapped ${formatUnits(usdcAmount, 6)} USDC to WETH`,
+          transactionHash: swapResult.transactionHash,
+          usdcSwapped: formatUnits(usdcAmount, 6),
           percentage,
-          totalUSDC: formatUnits(totalUSDC, 6),
-        },
-        account: account.address,
-        note: "This functionality will work automatically once CDP Trade API adds Base Sepolia support. The calculated amount is ready for swap execution.",
-      });
+          account: account.address,
+        });
+      } catch (swapError) {
+        // Trade API doesn't support Base Sepolia yet - will work once support is added
+        const errorMessage = swapError instanceof Error ? swapError.message : "Unknown error";
+        console.warn(`Swap failed (expected on Base Sepolia): ${errorMessage}`);
+        
+        return JSON.stringify({
+          success: false,
+          message: "Swap attempted but CDP Trade API currently only supports Base Mainnet and Ethereum Mainnet, not Base Sepolia",
+          calculated: {
+            usdcToSwap: formatUnits(usdcAmount, 6),
+            percentage,
+            totalUSDC: formatUnits(totalUSDC, 6),
+          },
+          account: account.address,
+          error: errorMessage,
+          note: "This functionality will work automatically once CDP Trade API adds Base Sepolia support.",
+        });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       console.error("Yield generation error:", errorMessage);
