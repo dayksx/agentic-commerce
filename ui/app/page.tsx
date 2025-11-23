@@ -8,6 +8,8 @@ import { PaymentsTable } from "@/components/payments-table"
 import { CrmTable } from "@/components/crm-table"
 import { CrmDetailPlaceholder } from "@/components/crm-detail-placeholder"
 import { useEffect, useState } from "react"
+import { createPublicClient, http, formatUnits } from "viem";
+import { baseSepolia } from "viem/chains";
 
 interface PaymentInfo {
   transactionHash: string;
@@ -18,28 +20,78 @@ interface PaymentInfo {
   amountUSD: string;
 }
 
+interface CrmClient {
+  address: string;
+  ip: string;
+  firstPayment: string;
+  lastPayment: string;
+  totalBilling: number;
+  loyalty: number;
+  reputation: number;
+  refund: boolean;
+}
+
 export default function Dashboard() {
   const [payments, setPayments] = useState<PaymentInfo[]>([]);
   const [isLoadingPayments, setIsLoadingPayments] = useState(true);
+  const [treasuryBalance, setTreasuryBalance] = useState<string>("0");
+  const [crmClients, setCrmClients] = useState<CrmClient[]>([]);
 
   useEffect(() => {
     async function fetchPayments() {
       try {
         const response = await fetch("/api/payments?limit=50");
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data);
-          setPayments(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch payments:', error);
+        const data = await response.json();
+  
+        setPayments(data.payments);
+        setTreasuryBalance(data.balance);
+  
+        // ===== CRM AGGREGATION =====
+        const grouped: Record<string, CrmClient> = {};
+  
+        data.payments.forEach((p: any) => {
+          const addr = p.from.toLowerCase();
+          const amount = parseFloat(p.amount) * 1000;
+          ;
+  
+          if (!grouped[addr]) {
+            grouped[addr] = {
+              address: addr,
+              ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+              firstPayment: p.timestamp,
+              lastPayment: p.timestamp,
+              totalBilling: amount,
+              loyalty: Math.floor(Math.random() * 100),
+              reputation: Math.floor(Math.random() * 100),
+              refund: Math.random() < 0.3,
+            };
+          } else {
+            grouped[addr].totalBilling += amount;
+  
+            if (new Date(p.timestamp) < new Date(grouped[addr].firstPayment)) {
+              grouped[addr].firstPayment = p.timestamp;
+            }
+            if (new Date(p.timestamp) > new Date(grouped[addr].lastPayment)) {
+              grouped[addr].lastPayment = p.timestamp;
+            }
+          }
+        });
+  
+        setCrmClients(Object.values(grouped));
+        // =============================
+      } catch (err) {
+        console.error(err);
       } finally {
         setIsLoadingPayments(false);
       }
     }
-
+    
     fetchPayments();
-  }, []) 
+      // Poll every 8 seconds
+  const interval = setInterval(fetchPayments, 8000);
+  return () => clearInterval(interval);
+  }, []);
+   
 
   return (
     <div className="min-h-screen bg-[#F4F4F8] p-6 md:p-10 font-sans selection:bg-[#FF9F7C] selection:text-white">
@@ -64,7 +116,7 @@ export default function Dashboard() {
         {/* LEFT COLUMN: Agent Economics */}
         <div className="w-full md:w-[360px] lg:w-[400px] flex-shrink-0 space-y-8">
           <AgentIdentityCard />
-          <TreasuryCard />
+          <TreasuryCard balance={treasuryBalance} />
           <div className="grid grid-cols-1 gap-8">
             <AllocationPie />
             
@@ -77,7 +129,7 @@ export default function Dashboard() {
           <div className="h-[50vh]">
               <PaymentsTable payments={payments} isLoading={isLoadingPayments} />
           </div>
-            <CrmTable />
+            <CrmTable clients={crmClients}/>
         </div>
       </div>
     </div>

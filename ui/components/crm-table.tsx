@@ -1,5 +1,6 @@
 import type React from "react"
 import { Filter, Download } from "lucide-react"
+import type { CrmClient } from "@types/crm-client";
 
 const CRM_CLIENTS_DATA = [
   {
@@ -70,7 +71,7 @@ const Badge = ({
 }: { children: React.ReactNode; type?: "neutral" | "success" | "purple" }) => {
   const styles = {
     neutral: "bg-[#F0F0F5] text-[#6E6E7A]",
-    success: "bg-[#D4FF00] text-[#4A5900]", // Neon Lime style
+    success: "bg-[#D4FF00] text-[#4A5900]",
     purple: "bg-[#F3F0FF] text-[#7C3AED]",
   }
   return (
@@ -80,7 +81,7 @@ const Badge = ({
   )
 }
 
-export function CrmTable() {
+export function CrmTable({ clients }: { clients: CrmClient[] }) {
   return (
     <div className="bg-white rounded-[32px] border border-white/50 shadow-[0_20px_40px_-10px_rgba(45,43,66,0.05)] h-full flex flex-col overflow-hidden">
       <div className="p-8 border-b border-[#F0F0F5] flex items-center justify-between">
@@ -105,37 +106,50 @@ export function CrmTable() {
             <tr>
               <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest">Consumer</th>
               <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest">IP Address</th>
-              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest">Date</th>
-              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest text-right">
-                Total Bill
-              </th>
-              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest text-center">
-                Loyalty
-              </th>
+              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest">Last Payment</th>
+              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest text-right">Total Bill</th>
+              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest text-center">Loyalty</th>
               <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest">Reputation</th>
+              <th className="p-6 text-[10px] font-bold text-[#8F8F9D] uppercase tracking-widest text-center">Refund</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#F4F4F8]">
-            {CRM_CLIENTS_DATA.map((client) => (
-              <tr key={client.id} className="hover:bg-[#FAFAFC] transition-colors cursor-pointer group rounded-xl">
+            {clients.map((client) => (
+              <tr key={client.address} className="hover:bg-[#FAFAFC] transition-colors cursor-pointer group rounded-xl">
                 <td className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-[#F0F0F5] flex items-center justify-center text-xs font-bold text-[#8F8F9D]">
-                      {client.consumer.substring(2, 4)}
+                      {client.address.substring(2, 4).toUpperCase()}
                     </div>
-                    <span className="font-mono text-sm font-semibold text-[#2D2B42]">{client.consumer}</span>
+                    <span className="font-mono text-sm font-semibold text-[#2D2B42]">
+                      {client.address.substring(0, 6)}...{client.address.slice(-4)}
+                    </span>
                   </div>
                 </td>
                 <td className="p-6 text-sm font-medium text-[#8F8F9D]">{client.ip}</td>
-                <td className="p-6 text-sm font-medium text-[#8F8F9D]">{client.date}</td>
-                <td className="p-6 text-sm font-bold text-[#2D2B42] text-right">${client.totalBill.toFixed(2)}</td>
+                <td className="p-6 text-sm font-medium text-[#8F8F9D]">
+                  {new Date(client.lastPayment).toLocaleDateString()}
+                </td>
+                <td className="p-6 text-sm font-bold text-[#2D2B42] text-right">
+                  ${client.totalBilling.toFixed(2)}
+                </td>
                 <td className="p-6 text-center">
                   <div className="text-sm font-bold text-[#2D2B42]">
                     {client.loyalty} <span className="text-[#8F8F9D] font-normal text-xs">/ 100</span>
                   </div>
                 </td>
-                <td className="p-6">
-                  <Badge type={client.reputation === "Elite" ? "success" : "neutral"}>{client.reputation}</Badge>
+                <td className="p-6 text-center">
+                  <Badge type={client.reputation === "Elite" ? "success" : "neutral"}>
+                    {client.reputation}
+                  </Badge>
+                </td>
+                                {/* NEW CELL */}
+                                <td className="p-6 text-center">
+                  {client.refund ? (
+                    <Badge type="success">TRUE</Badge>
+                  ) : (
+                    <Badge type="purple">FALSE</Badge>
+                  )}
                 </td>
               </tr>
             ))}

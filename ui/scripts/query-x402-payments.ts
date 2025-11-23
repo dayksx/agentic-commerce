@@ -1,6 +1,7 @@
 import { createPublicClient, http, formatUnits, parseAbiItem } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { CdpClient } from '@coinbase/cdp-sdk';
+import { parseAbi } from "viem";
 
 // USDC token address on Base Sepolia
 const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
@@ -77,6 +78,25 @@ export async function queryPayments(limit: number = 100): Promise<PaymentInfo[]>
   }
 
   return payments.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
+}
+
+//function to get the balance of the balance of the wallet
+
+export async function getPaymentBalance(): Promise<string> {
+  const PAYMENT_ADDRESS = await getPaymentAddress();
+
+  const erc20Abi = parseAbi([
+    "function balanceOf(address owner) view returns (uint256)"
+  ]);
+
+  const raw = await publicClient.readContract({
+    address: USDC_ADDRESS,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [PAYMENT_ADDRESS],
+  });
+
+  return formatUnits(raw as bigint, 6); // USDC has 6 decimals
 }
 
 // RUN ONLY IF CLI

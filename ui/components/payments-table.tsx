@@ -87,7 +87,15 @@ export function PaymentsTable({ payments = [], isLoading = false }: PaymentsTabl
             {payments.map((payment) => {
               const amount = parseFloat(payment.amount);
               return (
-                <tr key={payment.transactionHash} className="hover:bg-gradient-to-r hover:from-[#A78BFA]/5 hover:to-[#F472B6]/5 transition-colors cursor-pointer group rounded-xl">
+                <tr key={payment.transactionHash}
+                onClick={() =>
+                  window.open(
+                    `https://sepolia.basescan.org/tx/${payment.transactionHash}`,
+                    "_blank"
+                  )
+                }
+                className="hover:bg-gradient-to-r hover:from-[#A78BFA]/5 hover:to-[#F472B6]/5 
+                           transition-colors cursor-pointer group rounded-xl">
                   <td className="p-6">
                     <div className="p-2 rounded-full bg-gradient-to-br from-[#A78BFA]/20 to-[#F472B6]/20 text-[#A78BFA] w-fit">
                       <ArrowDownLeft size={16} />
