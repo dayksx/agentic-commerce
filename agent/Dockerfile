@@ -18,6 +18,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
 RUN pnpm install --prod --frozen-lockfile
 COPY --from=builder /app/dist ./dist
+COPY json-loader.mjs ./
 COPY tsconfig.json ./
 
 EXPOSE 8001

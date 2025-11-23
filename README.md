@@ -162,6 +162,23 @@ oasis rofl build --verify
 docker run --platform linux/amd64 --volume .:/src -it ghcr.io/oasisprotocol/rofl-dev:main oasis rofl build --verify
 ```
 
+Current verification passed:
+
+```bash
+Adding runtime as init...
+Runtime hash: 2cd0468ec2ea5f4264f47f728c5c3b0fcce93f5a537e568f8cbab8a53b526ae7
+Adding extra files...
+Creating squashfs filesystem...
+Creating tar archive: /tmp/oasis-build4288022190/rootfs.squashfs.tar
+TAR archive SHA256: ded5db3a9150d30c7a9b4ff84526c200b1d641c01e132bb8ae86f2d6f4c6491d
+Creating dm-verity hash tree...
+Creating ORC bundle...
+ROFL app built and bundle written to 'agent.default.orc'.
+Computing enclave identity...
+Built enclave identities MATCH latest manifest enclave identities.
+Manifest enclave identities MATCH on-chain enclave identities.
+```
+
 #### Deploy your own instance
 
 To build your own instance run:
@@ -225,16 +242,16 @@ Look for the Proxy: section, for example:
 
 ```bash
 Proxy:
-  Domain: m1106.test-proxy-b.rofl.app
+  Domain: m1147.test-proxy-b.rofl.app
   Ports from compose file:
-    8001 (agentic-commerce): https://p8001.m1106.test-proxy-b.rofl.app
-    3000 (agentic-commerce): https://p3000.m1106.test-proxy-b.rofl.app
+    8001 (agentic-commerce): https://p8001.m1147.test-proxy-b.rofl.app
+    3000 (agentic-commerce): https://p3000.m1147.test-proxy-b.rofl.app
 ```
 
 In the setup above the agent is available on:
 
-- [https://p8001.m1106.test-proxy-b.rofl.app](https://p8001.m1106.test-proxy-b.rofl.app)
-- [https://p3000.m1106.test-proxy-b.rofl.app](https://p3000.m1106.test-proxy-b.rofl.app)
+- [https://p8001.m1147.test-proxy-b.rofl.app](https://p8001.m1147.test-proxy-b.rofl.app)
+- [https://p3000.m1147.test-proxy-b.rofl.app](https://p3000.m1147.test-proxy-b.rofl.app)
 
 #### Pay for machine uptime
 

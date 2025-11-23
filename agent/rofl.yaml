@@ -1,4 +1,4 @@
-name: agentic-commerce
+name: agent
 version: 0.1.0
 tee: tdx
 kind: container
@@ -17,14 +17,14 @@ artifacts:
     compose: docker-compose.yml
 deployments:
   default:
-    app_id: rofl1qz7duxkxvas7uhmfctm7cf07yg5w0wegssacth0u
+    app_id: rofl1qpaxwqdmar28mqswmz2k0w0tr6dpa36uzcthgqkm
     network: testnet
     paratime: sapphire
     admin: ethglobal25
-    oci_repository: rofl.sh/a390630d-dfdf-4841-9446-ccff06f6a4a8:1763835651
+    oci_repository: rofl.sh/d6916145-4b11-4650-ab42-87727dad0b9a:1763898826
     trust_root:
-      height: 29455837
-      hash: a7e3c777aa84d7c2edd7f8223ef296fc5eee22f2cc5da40d5e215a884f6dd3e8
+      height: 29469221
+      hash: f734afe45ef550e70e459fde320a76c245b8ef9a04078db9b3ba47305f9430cf
     policy:
       quotes:
         pcs:
@@ -32,23 +32,23 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - id: NM+MDa1QTO+Pk5mdKnn91jjWEQvMMSR8mFtDNddJtS0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - id: IAJuqEXq3GyCVGKPpZMZolg5UrXkMw/T9n492/I2hIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: 2ilzpSHaSali041Kd5dYfvmBvasQ9vjh0buXYTb3VlkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: yWlidf1Z+vJEFkkfUmnCOa7+4GeZsaKP20p7GHsh4WUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
       max_expiration: 3
     secrets:
       - name: CDP_API_KEY_SECRET
-        value: pGJwa1ggrBKSwBND4pNdzBRupe3I0uYnGMuuGtwYscQ85aBXciVkbmFtZVgilNUkvtTIUm2Mg04l41naWUKtm7U0s+txmuAB8qzNw2/JzGVub25jZU9qYzqGNad8yNI3Z4of4qhldmFsdWVYaBSYVjPfLiTNm4yuucsryXyoE6WHyWwbc8FyxXiSgD6rJ7m0HODaaw/JlAwnyTn6ULXGXmw8mJujh2HsQaU/GVCoHaKHy35E2Su2GhHbhMP4tpk5OmbmoMr1bpk95JI1pbPlhPn5gZCm
-      - name: PRIVATE_KEY
-        value: pGJwa1ggIHQTzrSePnpTxN/2ZgXAzk3J++ORAaoYMKpj65yLZlZkbmFtZVgbagIYfjYzj2d9pnNGaYApuFW1A1VVhdjQhhjkZW5vbmNlT/83dtj52tLiKl+3aVhu4mV2YWx1ZVhQSjWP4IKUad+Kz1G2IXGWJ2aL/AK62V5wEDzGX2GbnSeOJjGfdGYPCP+jwaf6GOlU4ovr1fCD0AaYHUINKbuo8YxsDZvUffCT3Zp+1NkIMZA=
+        value: pGJwa1gggV92y312HFnqnfLpYPCHHTGLWj6FBAJjDyo8B32o6XJkbmFtZVgiOFMyjRNX17UzBFSC5NEeI5KxepMdFVI5Oz9LWZFxdp8GyGVub25jZU/k0tmcP/II8yAnQbzH+yhldmFsdWVYaIlxEvw/X/23T0mb0zhOuNLzCgZdWP9FmZgXVarFq+r5mTIvH2YYsIq4Fu6rs4pUcUUfNIX61xI4b9qeo8AOZM7Cpgc6sFNgETVu3e4chaSxkmzpfp5K2iGgtLhRbfHKNdCJKBPiGGsS
       - name: CDP_API_KEY_ID
-        value: pGJwa1ggq/vuQH8rWzZhaxL3xqbhZ9ggFt6dnoPndADLty8QzldkbmFtZVgeYD2WBcU/dvE3x0L8s3FStRlQ1Yk8/DSPLlZnHMVbZW5vbmNlTzIM5g4RUV9Afko1zNU9xmV2YWx1ZVg0uf1zAuXD6+WUUxz+bFt96YKmspKGidSq04d/mdFIr4WbBh1cuPKtFBIqU1aspwJa4Yx3EQ==
+        value: pGJwa1ggBmYkGSIynJh9p8IVZDnw8Qug3fNrBzPbw5DWKCCLYG9kbmFtZVge31pQ4OkdbdDMal3p1lHq3i1drImknFhI0swcTYBMZW5vbmNlTwJozW/FW/Hf07k9VjolKWV2YWx1ZVg0DCkQcPpNlm8GLfH5g9qjHW5pud7l6Jft0F9OMDGZ8fxEZWPPd5JNvgIWKRw5M118IVPRbw==
+      - name: PRIVATE_KEY
+        value: pGJwa1ggpEDBtghTA9SdMYUncXbeoc57M3n625ZyU5HB2Hy76xJkbmFtZVgbI3maGDKAO6boQVMiBT28P0m9NsinAeNc15FQZW5vbmNlTzOApk6nrotqJ8MQL7t2D2V2YWx1ZVhQDFNfcqSxigAW+N1GPNBUb134SbKp0/3OPY2K+0KKkJYtzAs0bOCoVwWNOixbeh/kFb/khIpGZJfCkO84U+pWbT0wiIuOJAnWFp8hhWzt8A4=
       - name: CDP_WALLET_SECRET
-        value: pGJwa1ggXXGb/jEfgVOh7MuyuWpFq8vE/FNoFiony1frxQAdrRZkbmFtZVghfXKRztT/Sx9iCl4ObjY9NWZ0gwtTgxpLa2A5JFtw4izyZW5vbmNlT8V5WGjlDzbFEcdkD+awUmV2YWx1ZVjIVGW/2AnyE20t5YuJDsjW26X4KaanFoJlwF2AuQ4AH+0gFbxq4KRtqpvf47HlPzO2WTa6mNo0rYxNnFEDdIk+CXEGZS1kYEKJBDXSsj6UpdKNhzwVK80YkMazcKZbQxDP1JswCHHKm2FnUPrU97f+yenFDApXNdyyB84yocj95mtbxtB1NQUftbjp/J5rPx56o7xAC9ObPZ3B/muOfn0f7A3vEhKq0qI4pbAdcwqjjrhUZpuH/ibMm34bkWwn/0RtqSsa4XWu80o=
+        value: pGJwa1ggRdb/a57DoCi1QUowAF2UwutA69hkES12+hmu1l5RbAZkbmFtZVghKIBGqWv+6wFd59sR5N+JmyOAYmmTvzs7VRSsJRuzxklDZW5vbmNlT6BgsQSvzdmL47D7tOBwJGV2YWx1ZVjIXmYDcIRMggm0Q0mDBhBfIUH4FIZ0GazfRNZAr9H16oSH9IJz/D7xIdswb2cQ2sycypSNIarYYD20UYvYtmArz8VHqhJd/fAFv7m0hsRUnURkhoQGqFGgoql0UF1NRoX9FyprjiSS/o3uZOfl80YYunzGpA4+ZcScacfytqcf99Y8ta/ZR9sjKHQXpUSYo/gkX2RQbSzRI7IwEfmX+5/CletJ+hXNQSw4JV4xUW34GsLsNebjDYDMMg6+ARxBykp3fxXkqSirSXI=
     machines:
       default:
         provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
         offer: playground_short
-        id: "0000000000000452"
+        id: 000000000000047b

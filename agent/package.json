@@ -10,9 +10,9 @@
     "call-x402": "ts-node scripts/call-x402-endpoint.ts",
     "query-payments": "ts-node scripts/query-x402-payments.ts",
     "query-payments-cdp": "ts-node scripts/query-payments-cdp-api.ts",
-    "docker:build": "docker buildx build --platform=linux/amd64,linux/arm64 -t cesarev/$(basename $PWD):latest --push .",
+    "docker:build": "docker buildx build --platform=linux/amd64,linux/arm64 -t cesarev/agentic-commerce:latest --push .",
     "docker:start": "docker compose up",
-    "docker:ship": "pnpm docker:build && docker push cesarev/$(basename $PWD):latest"
+    "docker:ship": "pnpm docker:build && docker push cesarev/agentic-commerce:latest"
   },
   "keywords": [],
   "author": "",
